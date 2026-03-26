@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Aviation Trainer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg:       #0f1117;
+    --card:     #161922;
+    --input-bg: #1e2230;
+    --accent:   #3c78dc;
+    --white:    #ffffff;
+    --muted:    #787d91;
+    --border:   #282d3c;
+    --green:    #1ea05a;
+    --red:      #c83232;
+    --yellow:   #dcaa1e;
+    --easy:     #1ea05a;
+    --medium:   #dc961e;
+    --hard:     #c83232;
+    --speed:    #3c78dc;
+    --alt:      #3caf78;
+    --dir:      #d28228;
+    --freq:     #a050c8;
+    --airport:  #c85078;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; flex-direction: column; flex: 1; padding: 20px 16px 28px; overflow-y: auto; }
+  .screen.active { display: flex; }
+
+  /* ── START SCREEN ── */
+  .title-block { text-align: center; margin-bottom: 24px; }
+  .game-title { font-size: 24px; font-weight: 800; letter-spacing: 2px; color: var(--white); }
+  .game-sub   { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .level-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    -webkit-user-select: none;
+  }
+  .level-card:active { background: #1e2336; }
+  .level-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+  .level-info { flex: 1; min-width: 0; }
+  .level-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 4px; border: 1px solid;
+    margin-bottom: 5px;
+  }
+  .level-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .level-params { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .level-rule   { font-size: 10px; color: #5a5f78; margin-top: 4px; }
+  .level-btn {
+    background: var(--accent);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .easy-border   { border-color: var(--easy)   !important; }
+  .medium-border { border-color: var(--medium) !important; }
+  .hard-border   { border-color: var(--hard)   !important; }
+
+  /* ── DISPLAY SCREEN ── */
+  .screen-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .round-label { font-size: 16px; font-weight: 700; }
+  .countdown-block { text-align: right; }
+  .countdown-num  { font-size: 30px; font-weight: 800; color: var(--yellow); line-height: 1; }
+  .countdown-text { font-size: 10px; color: var(--yellow); letter-spacing: 1px; }
+  .countdown-num.urgent  { color: var(--red); }
+  .countdown-text.urgent { color: var(--red); }
+
+  .param-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .param-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+  .param-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 2px; }
+  .param-value { font-size: 32px; font-weight: 800; line-height: 1.1; }
+  .param-unit  { font-size: 13px; color: var(--muted); }
+
+  /* ── INPUT SCREEN ── */
+  .input-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .level-badge-sm {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 3px 10px; border-radius: 4px; border: 1px solid;
+  }
+
+  .input-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .input-card.correct { background: #122d1e; border-color: var(--green) !important; }
+  .input-card.wrong   { background: #301212; border-color: var(--red)   !important; }
+
+  .input-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+
+  .input-body { flex: 1; min-width: 0; }
+  .input-title { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 3px; }
+
+  .input-row { display: flex; align-items: center; gap: 8px; }
+  .input-row input {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--white);
+    font-size: 20px; font-weight: 700;
+    padding: 6px 10px;
+    width: 140px;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .input-row input:focus { border-color: var(--accent); }
+  .input-hint { font-size: 10px; color: var(--muted); }
+
+  /* Richtige Antwort rechts anzeigen */
+  .correct-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(30,160,90,0.12);
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    flex-shrink: 0;
+  }
+  .correct-value.wrong-shown { color: var(--red); background: rgba(200,50,50,0.12); }
+  .correct-value.visible { opacity: 1; }
+
+  .submit-btn {
+    width: 100%; padding: 15px;
+    background: var(--accent); color: var(--white);
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; letter-spacing: 1px;
+    cursor: pointer; margin-top: 6px;
+    transition: opacity 0.2s;
+  }
+  .submit-btn:disabled { opacity: 0.4; }
+  .submit-btn:active   { opacity: 0.8; }
+
+  /* ── SCORE SCREEN ── */
+  .score-screen {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .score-title { font-size: 20px; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px; }
+  .score-level-badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    padding: 4px 14px; border-radius: 6px; border: 1px solid;
+    margin-bottom: 22px;
+  }
+  .score-number { font-size: 56px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .score-sub    { font-size: 14px; color: var(--muted); margin-top: 6px; margin-bottom: 16px; }
+  .score-divider { width: 100%; height: 1px; background: var(--border); margin-bottom: 16px; }
+  .score-percent { font-size: 30px; font-weight: 800; }
+  .score-acc-sub { font-size: 12px; color: var(--muted); margin-top: 4px; margin-bottom: 30px; }
+
+  .score-btn {
+    width: 220px; padding: 13px;
+    border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; margin-bottom: 10px;
+  }
+  .score-btn.primary   { background: var(--accent); color: var(--white); }
+  .score-btn.secondary { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+  .score-btn:active { opacity: 0.8; }
+
+  /* Round history on score screen */
+  .history-block { width: 100%; margin-bottom: 20px; }
+  .history-title { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px; }
+  .history-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 12px;
+    background: var(--card);
+    border-radius: 8px; margin-bottom: 5px;
+    font-size: 12px;
+  }
+  .history-round { color: var(--muted); }
+  .history-score { font-weight: 700; }
+
+  /* hidden utility */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════════════════════════════════════════════
+       START SCREEN
+  ══════════════════════════════════════════════════ -->
+  <div id="screen-start" class="screen active">
+    <div class="title-block">
+      <div class="game-title">✈ AVIATION TRAINER</div>
+      <div class="game-sub">Parameter Memory Game – choose your level</div>
+    </div>
+
+    <!-- EASY -->
+    <div class="level-card easy-border" onclick="selectLevel('easy')">
+      <div class="level-accent" style="background:var(--easy)"></div>
+      <div class="level-info">
+        <span class="level-badge" style="color:var(--easy);border-color:var(--easy)">EASY</span>
+        <div class="level-title">Einfach</div>
+        <div class="level-params">
+          Speed 0–300 kts<br>
+          Altitude 0–10,000 ft (×50)<br>
+          Direction 0–365°
+        </div>
+        <div class="level-rule">3 parameters · 5 rounds · 6 seconds</div>
+      </div>
+      <button class="level-btn" style="background:var(--easy)" onclick="selectLevel('easy');event.stopPropagation()">START</button>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="level-card medium-border" onclick="selectLevel('medium')">
+      <div class="level-accent" style="background:var(--medium)"></div>
+      <div class="level-info">
+        <span class="level-badge" style="color:var(--medium);border-color:var(--medium)">MEDIUM</span>
+        <div class="level-title">Mittel</div>
+        <div class="level-params">
+          Speed · Altitude · Direction<br>
+          Frequency 118.000–136.975 MHz
+        </div>
+        <div class="level-rule">4 parameters · 5 rounds · 6 seconds</div>
+      </div>
+      <button class="level-btn" style="background:var(--medium)" onclick="selectLevel('medium');event.stopPropagation()">START</button>
+    </div>
+
+    <!-- HARD -->
+    <div class="level-card hard-border" onclick="selectLevel('hard')">
+      <div class="level-accent" style="background:var(--hard)"></div>
+      <div class="level-info">
+        <span class="level-badge" style="color:var(--hard);border-color:var(--hard)">HARD</span>
+        <div class="level-title">Schwer</div>
+        <div class="level-params">
+          Speed · Altitude · Direction · Frequency<br>
+          Airport Code (e.g. FRA, LHR, JFK)
+        </div>
+        <div class="level-rule">5 parameters · 5 rounds · 6 seconds</div>
+      </div>
+      <button class="level-btn" style="background:var(--hard)" onclick="selectLevel('hard');event.stopPropagation()">START</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       DISPLAY SCREEN
+  ══════════════════════════════════════════════════ -->
+  <div id="screen-display" class="screen">
+    <div class="screen-header">
+      <div class="round-label" id="d-round">Round 1 / 5</div>
+      <div class="countdown-block">
+        <div class="countdown-num" id="d-countdown">6</div>
+        <div class="countdown-text" id="d-phase">MEMORIZE</div>
+      </div>
+    </div>
+
+    <!-- SPEED -->
+    <div class="param-card">
+      <div class="param-accent" style="background:var(--speed)"></div>
+      <div>
+        <div class="param-label">SPEED</div>
+        <div><span class="param-value" id="d-speed">—</span> <span class="param-unit">kts</span></div>
+      </div>
+    </div>
+    <!-- ALTITUDE -->
+    <div class="param-card">
+      <div class="param-accent" style="background:var(--alt)"></div>
+      <div>
+        <div class="param-label">ALTITUDE</div>
+        <div><span class="param-value" id="d-alt">—</span> <span class="param-unit">ft</span></div>
+      </div>
+    </div>
+    <!-- DIRECTION -->
+    <div class="param-card">
+      <div class="param-accent" style="background:var(--dir)"></div>
+      <div>
+        <div class="param-label">DIRECTION</div>
+        <div><span class="param-value" id="d-dir">—</span> <span class="param-unit">°</span></div>
+      </div>
+    </div>
+    <!-- FREQUENCY (Medium+) -->
+    <div class="param-card hidden" id="d-freq-card">
+      <div class="param-accent" style="background:var(--freq)"></div>
+      <div>
+        <div class="param-label">FREQUENCY</div>
+        <div><span class="param-value" id="d-freq">—</span> <span class="param-unit">MHz</span></div>
+      </div>
+    </div>
+    <!-- AIRPORT (Hard) -->
+    <div class="param-card hidden" id="d-airport-card">
+      <div class="param-accent" style="background:var(--airport)"></div>
+      <div>
+        <div class="param-label">AIRPORT</div>
+        <div><span class="param-value" id="d-airport">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       INPUT SCREEN
+  ══════════════════════════════════════════════════ -->
+  <div id="screen-input" class="screen">
+    <div class="input-header">
+      <div class="round-label" id="i-round">Round 1 / 5</div>
+      <span class="level-badge-sm" id="i-badge" style="color:var(--easy);border-color:var(--easy)">EASY</span>
+    </div>
+
+    <!-- SPEED -->
+    <div class="input-card" id="card-speed">
+      <div class="input-accent" style="background:var(--speed)"></div>
+      <div class="input-body">
+        <div class="input-title">SPEED</div>
+        <div class="input-row">
+          <input type="number" id="in-speed" placeholder="kts" inputmode="numeric">
+          <span class="input-hint">0–300</span>
+        </div>
+      </div>
+      <div class="correct-value" id="cv-speed"></div>
+    </div>
+
+    <!-- ALTITUDE -->
+    <div class="input-card" id="card-alt">
+      <div class="input-accent" style="background:var(--alt)"></div>
+      <div class="input-body">
+        <div class="input-title">ALTITUDE</div>
+        <div class="input-row">
+          <input type="number" id="in-alt" placeholder="ft" inputmode="numeric">
+          <span class="input-hint">0–10000 (×50)</span>
+        </div>
+      </div>
+      <div class="correct-value" id="cv-alt"></div>
+    </div>
+
+    <!-- DIRECTION -->
+    <div class="input-card" id="card-dir">
+      <div class="input-accent" style="background:var(--dir)"></div>
+      <div class="input-body">
+        <div class="input-title">DIRECTION</div>
+        <div class="input-row">
+          <input type="number" id="in-dir" placeholder="°" inputmode="numeric">
+          <span class="input-hint">0–365</span>
+        </div>
+      </div>
+      <div class="correct-value" id="cv-dir"></div>
+    </div>
+
+    <!-- FREQUENCY (Medium+) -->
+    <div class="input-card hidden" id="card-freq">
+      <div class="input-accent" style="background:var(--freq)"></div>
+      <div class="input-body">
+        <div class="input-title">FREQUENCY</div>
+        <div class="input-row">
+          <input type="text" id="in-freq" placeholder="e.g. 118.025" inputmode="decimal">
+          <span class="input-hint">MHz</span>
+        </div>
+      </div>
+      <div class="correct-value" id="cv-freq"></div>
+    </div>
+
+    <!-- AIRPORT (Hard) -->
+    <div class="input-card hidden" id="card-airport">
+      <div class="input-accent" style="background:var(--airport)"></div>
+      <div class="input-body">
+        <div class="input-title">AIRPORT</div>
+        <div class="input-row">
+          <input type="text" id="in-airport" placeholder="e.g. FRA" maxlength="3"
+                 style="text-transform:uppercase;width:110px">
+          <span class="input-hint">3-letter code</span>
+        </div>
+      </div>
+      <div class="correct-value" id="cv-airport"></div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="checkAnswers()">SUBMIT ANSWERS</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       SCORE SCREEN
+  ══════════════════════════════════════════════════ -->
+  <div id="screen-score" class="screen score-screen">
+    <div class="score-title">ROUND COMPLETE</div>
+    <span class="score-level-badge" id="s-badge" style="color:var(--easy);border-color:var(--easy)">EASY</span>
+
+    <div class="score-number" id="s-score">0 / 15</div>
+    <div class="score-sub">correct parameters</div>
+    <div class="score-divider"></div>
+    <div class="score-percent" id="s-percent">0%</div>
+    <div class="score-acc-sub">accuracy</div>
+
+    <div class="history-block" id="s-history"></div>
+
+    <button class="score-btn primary" onclick="playAgain()">PLAY AGAIN</button>
+    <button class="score-btn secondary" onclick="showScreen('start')">MAIN MENU</button>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+const AIRPORT_CODES = [
+  "FRA","MUC","BER","HAM","DUS","CGN","STR","HAJ","NUE","LEJ",
+  "LHR","CDG","AMS","MAD","FCO","ZRH","VIE","BRU","LIS","ATH",
+  "JFK","LAX","ORD","DFW","ATL","MIA","DEN","SFO","SEA","BOS",
+  "DXB","SIN","HKG","NRT","ICN","SYD","DOH","AUH","IST","BKK"
+];
+
+const TOTAL_ROUNDS = 5;
+
+let level          = 'easy';
+let currentRound   = 0;
+let correctTotal   = 0;
+let paramsPerRound = 3;
+let countdown      = null;
+let roundHistory   = [];
+
+// Target values
+let tSpeed, tAlt, tDir, tFreq, tAirport;
+
+// ════════════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ════════════════════════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════
+// LEVEL SELECTION
+// ════════════════════════════════════════════════════════
+function selectLevel(lv) {
+  level          = lv;
+  currentRound   = 0;
+  correctTotal   = 0;
+  roundHistory   = [];
+  paramsPerRound = lv === 'easy' ? 3 : lv === 'medium' ? 4 : 5;
+  startRound();
+}
+
+// ════════════════════════════════════════════════════════
+// ROUND LOGIC
+// ════════════════════════════════════════════════════════
+function startRound() {
+  currentRound++;
+  generateValues();
+  applyLevelUI();
+  showDisplayScreen();
+}
+
+function generateValues() {
+  tSpeed   = Math.floor(Math.random() * 301);                     // 0–300
+  tAlt     = Math.floor(Math.random() * 201) * 50;               // 0–10000 ×50
+  tDir     = Math.floor(Math.random() * 366);                    // 0–365
+  // Frequency: 118.000 + n*0.025, n in [0,759]
+  const freqStep = Math.floor(Math.random() * 760);
+  tFreq    = (118000 + freqStep * 25) / 1000;                    // 3 decimals
+  tAirport = AIRPORT_CODES[Math.floor(Math.random() * AIRPORT_CODES.length)];
+}
+
+function applyLevelUI() {
+  const isMedium = level === 'medium' || level === 'hard';
+  const isHard   = level === 'hard';
+
+  // Display cards
+  toggle('d-freq-card',    isMedium);
+  toggle('d-airport-card', isHard);
+
+  // Input cards
+  toggle('card-freq',    isMedium);
+  toggle('card-airport', isHard);
+
+  // Level colors
+  const colors = { easy: 'var(--easy)', medium: 'var(--medium)', hard: 'var(--hard)' };
+  const names  = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD' };
+  const c = colors[level];
+  const badge = document.getElementById('i-badge');
+  badge.textContent = names[level];
+  badge.style.color = c;
+  badge.style.borderColor = c;
+}
+
+// ════════════════════════════════════════════════════════
+// DISPLAY PHASE
+// ════════════════════════════════════════════════════════
+function showDisplayScreen() {
+  setText('d-speed',   tSpeed);
+  setText('d-alt',     tAlt);
+  setText('d-dir',     tDir);
+  setText('d-freq',    tFreq.toFixed(3));
+  setText('d-airport', tAirport);
+  setText('d-round',   `Round ${currentRound} / ${TOTAL_ROUNDS}`);
+
+  let secs = 6;
+  const numEl  = document.getElementById('d-countdown');
+  const phaseEl = document.getElementById('d-phase');
+  numEl.textContent  = '6';
+  numEl.className    = 'countdown-num';
+  phaseEl.textContent = 'MEMORIZE';
+  phaseEl.className  = 'countdown-text';
+
+  showScreen('display');
+
+  if (countdown) clearInterval(countdown);
+  countdown = setInterval(() => {
+    secs--;
+    numEl.textContent = secs;
+    if (secs <= 2) {
+      numEl.className  = 'countdown-num urgent';
+      phaseEl.className = 'countdown-text urgent';
+    }
+    if (secs <= 0) {
+      clearInterval(countdown);
+      showInputScreen();
+    }
+  }, 1000);
+}
+
+// ════════════════════════════════════════════════════════
+// INPUT PHASE
+// ════════════════════════════════════════════════════════
+function showInputScreen() {
+  setText('i-round', `Round ${currentRound} / ${TOTAL_ROUNDS}`);
+
+  // Clear fields
+  ['in-speed','in-alt','in-dir','in-freq','in-airport'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  // Reset card colors + hide correct-value labels
+  ['card-speed','card-alt','card-dir','card-freq','card-airport'].forEach(id => {
+    const card = document.getElementById(id);
+    if (card) { card.classList.remove('correct','wrong'); }
+  });
+  ['cv-speed','cv-alt','cv-dir','cv-freq','cv-airport'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('visible','wrong-shown'); el.textContent = ''; }
+  });
+
+  document.getElementById('submit-btn').disabled = false;
+  showScreen('input');
+
+  // Focus first field after short delay (mobile keyboard)
+  setTimeout(() => {
+    const first = document.getElementById('in-speed');
+    if (first) first.focus();
+  }, 300);
+}
+
+// ════════════════════════════════════════════════════════
+// CHECK ANSWERS
+// ════════════════════════════════════════════════════════
+function checkAnswers() {
+  const entSpeed = parseInt(document.getElementById('in-speed').value);
+  const entAlt   = parseInt(document.getElementById('in-alt').value);
+  const entDir   = parseInt(document.getElementById('in-dir').value);
+
+  const speedOk = entSpeed === tSpeed;
+  const altOk   = entAlt   === tAlt;
+  const dirOk   = entDir   === tDir;
+
+  markCard('card-speed', 'cv-speed', speedOk, String(tSpeed));
+  markCard('card-alt',   'cv-alt',   altOk,   String(tAlt));
+  markCard('card-dir',   'cv-dir',   dirOk,   String(tDir));
+
+  let roundScore = (speedOk?1:0) + (altOk?1:0) + (dirOk?1:0);
+
+  let freqOk = true;
+  if (level === 'medium' || level === 'hard') {
+    const entFreq = parseFloat(document.getElementById('in-freq').value.replace(',','.'));
+    freqOk = Math.abs(entFreq - tFreq) < 0.0005;
+    markCard('card-freq', 'cv-freq', freqOk, tFreq.toFixed(3));
+    roundScore += freqOk ? 1 : 0;
+  }
+
+  let airportOk = true;
+  if (level === 'hard') {
+    const entAirport = (document.getElementById('in-airport').value || '').trim().toUpperCase();
+    airportOk = entAirport === tAirport;
+    markCard('card-airport', 'cv-airport', airportOk, tAirport);
+    roundScore += airportOk ? 1 : 0;
+  }
+
+  correctTotal += roundScore;
+  roundHistory.push({ round: currentRound, score: roundScore, max: paramsPerRound });
+
+  document.getElementById('submit-btn').disabled = true;
+
+  // Next after 2.5s
+  setTimeout(() => {
+    if (currentRound < TOTAL_ROUNDS) startRound();
+    else showScoreScreen();
+  }, 2500);
+}
+
+function markCard(cardId, cvId, correct, correctVal) {
+  const card = document.getElementById(cardId);
+  const cv   = document.getElementById(cvId);
+  if (!card || !cv) return;
+
+  card.classList.remove('correct','wrong');
+  card.classList.add(correct ? 'correct' : 'wrong');
+
+  if (correct) {
+    cv.textContent = '✓ ' + correctVal;
+    cv.classList.remove('wrong-shown');
+  } else {
+    cv.textContent = '✗ ' + correctVal;
+    cv.classList.add('wrong-shown');
+  }
+  cv.classList.add('visible');
+}
+
+// ════════════════════════════════════════════════════════
+// SCORE SCREEN
+// ════════════════════════════════════════════════════════
+function showScoreScreen() {
+  const total   = TOTAL_ROUNDS * paramsPerRound;
+  const pct     = Math.round(correctTotal / total * 100);
+
+  setText('s-score',   `${correctTotal} / ${total}`);
+  setText('s-percent', `${pct}%`);
+
+  const colors = { easy: 'var(--easy)', medium: 'var(--medium)', hard: 'var(--hard)' };
+  const names  = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD' };
+  const c = colors[level];
+  const badge = document.getElementById('s-badge');
+  badge.textContent  = names[level];
+  badge.style.color  = c;
+  badge.style.borderColor = c;
+
+  const pctEl = document.getElementById('s-percent');
+  pctEl.style.color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+  // Round history
+  const hist = document.getElementById('s-history');
+  hist.innerHTML = `<div class="history-title">ROUND BREAKDOWN</div>`;
+  roundHistory.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    const pctR = Math.round(r.score / r.max * 100);
+    const col  = pctR >= 80 ? 'var(--green)' : pctR >= 50 ? 'var(--yellow)' : 'var(--red)';
+    row.innerHTML = `
+      <span class="history-round">Round ${r.round}</span>
+      <span class="history-score" style="color:${col}">${r.score} / ${r.max}  (${pctR}%)</span>
+    `;
+    hist.appendChild(row);
+  });
+
+  showScreen('score');
+}
+
+function playAgain() {
+  currentRound = 0;
+  correctTotal = 0;
+  roundHistory = [];
+  startRound();
+}
+
+// ════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════
+function toggle(id, show) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('hidden', !show);
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// Uppercase airport input live
+document.getElementById('in-airport').addEventListener('input', function() {
+  this.value = this.value.toUpperCase();
+});
+</script>
+</body>
+</html>
