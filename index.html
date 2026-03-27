@@ -7,450 +7,309 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Aviation Trainer</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  :root {
-    --bg:       #0f1117;
-    --card:     #161922;
-    --input-bg: #1e2230;
-    --accent:   #3c78dc;
-    --white:    #ffffff;
-    --muted:    #787d91;
-    --border:   #282d3c;
-    --green:    #1ea05a;
-    --red:      #c83232;
-    --yellow:   #dcaa1e;
-    --easy:     #1ea05a;
-    --medium:   #dc961e;
-    --hard:     #c83232;
-    --compass:  #3c78dc;
-    --speed:    #3caf78;
-    --attitude: #d28228;
-    --alt:      #a050c8;
-    --calc:     #3c78dc;
-  }
+:root {
+  --bg:       #0f1117;
+  --card:     #161922;
+  --input-bg: #1e2230;
+  --accent:   #3c78dc;
+  --white:    #ffffff;
+  --muted:    #787d91;
+  --border:   #282d3c;
+  --green:    #1ea05a;
+  --red:      #c83232;
+  --yellow:   #dcaa1e;
+  --easy:     #1ea05a;
+  --medium:   #dc961e;
+  --hard:     #c83232;
+  --compass:  #3c78dc;
+  --speed:    #3caf78;
+  --attitude: #d28228;
+  --alt:      #a050c8;
+  --t3color:  #e05090;
+  --t4color:  #50c8c8;
+}
 
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--white);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    overflow-x: hidden;
-  }
+html, body { height: 100%; background: var(--bg); color: var(--white); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow-x: hidden; }
+#app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+.screen { display: none; flex-direction: column; flex: 1; padding: 20px 16px 32px; overflow-y: auto; }
+.screen.active { display: flex; }
 
-  #app {
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+/* ── SHARED ── */
+.game-title { font-size: 22px; font-weight: 800; letter-spacing: 2px; }
+.game-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.title-block { text-align: center; margin-bottom: 22px; }
+.back-btn { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; margin-bottom: 16px; background: none; border: none; padding: 0; user-select: none; }
+.back-btn:active { color: var(--white); }
+.level-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 2px 8px; border-radius: 4px; border: 1px solid; margin-bottom: 5px; }
+.level-badge-sm { font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; border: 1px solid; }
+.hidden { display: none !important; }
 
-  .screen { display: none; flex-direction: column; flex: 1; padding: 20px 16px 28px; overflow-y: auto; }
-  .screen.active { display: flex; }
+/* ── MODE CARDS (Home) ── */
+.mode-card { background: var(--card); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; border: 1.5px solid var(--border); display: flex; align-items: center; gap: 14px; cursor: pointer; transition: background 0.15s; -webkit-user-select: none; }
+.mode-card:active { background: #1e2336; }
+.mode-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+.mode-info { flex: 1; min-width: 0; }
+.mode-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.mode-desc  { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.mode-rule  { font-size: 10px; color: #5a5f78; margin-top: 4px; }
+.mode-btn { color: var(--white); border: none; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
-  /* ── SHARED COMPONENTS ── */
-  .game-title { font-size: 22px; font-weight: 800; letter-spacing: 2px; color: var(--white); }
-  .game-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .title-block { text-align: center; margin-bottom: 22px; }
+/* ── LEVEL CARDS ── */
+.level-card { background: var(--card); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; border: 1.5px solid var(--border); display: flex; align-items: center; gap: 14px; cursor: pointer; transition: background 0.15s; -webkit-user-select: none; }
+.level-card:active { background: #1e2336; }
+.level-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+.level-info { flex: 1; min-width: 0; }
+.level-title  { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.level-params { font-size: 11px; color: var(--muted); line-height: 1.65; }
+.level-rule   { font-size: 10px; color: #5a5f78; margin-top: 4px; }
+.level-btn { color: var(--white); border: none; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
-  .level-badge {
-    display: inline-block;
-    font-size: 10px; font-weight: 700; letter-spacing: 1px;
-    padding: 2px 8px; border-radius: 4px; border: 1px solid;
-    margin-bottom: 5px;
-  }
+/* ── MEMORY DISPLAY ── */
+.screen-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.round-label { font-size: 16px; font-weight: 700; }
+.countdown-block { text-align: right; }
+.countdown-num  { font-size: 30px; font-weight: 800; color: var(--yellow); line-height: 1; }
+.countdown-text { font-size: 10px; color: var(--yellow); letter-spacing: 1px; }
+.countdown-num.urgent  { color: var(--red); }
+.countdown-text.urgent { color: var(--red); }
+.param-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 16px; margin-bottom: 9px; display: flex; align-items: center; gap: 12px; }
+.param-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+.param-inner  { flex: 1; min-width: 0; }
+.param-label  { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 2px; }
+.param-value  { font-size: 30px; font-weight: 800; line-height: 1.1; }
+.param-unit   { font-size: 12px; color: var(--muted); }
+.param-att-dir { font-size: 12px; color: var(--yellow); font-weight: 600; margin-top: 1px; }
 
-  .section-divider {
-    width: 100%; height: 1px; background: var(--border);
-    margin: 18px 0;
-  }
+/* ── MEMORY INPUT ── */
+.input-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.input-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; transition: border-color 0.2s, background 0.2s; }
+.input-card.correct { background: #122d1e; border-color: var(--green) !important; }
+.input-card.wrong   { background: #301212; border-color: var(--red)   !important; }
+.input-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+.input-body   { flex: 1; min-width: 0; }
+.input-title  { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 3px; }
+.input-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.input-row input { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; color: var(--white); font-size: 18px; font-weight: 700; padding: 6px 10px; outline: none; -webkit-appearance: none; min-width: 0; }
+.input-row input:focus { border-color: var(--accent); }
+.input-row input.w-num { width: 110px; }
+.input-row input.w-dir { width: 100px; }
+.input-hint { font-size: 10px; color: var(--muted); white-space: nowrap; }
+.att-row { display: flex; align-items: center; gap: 6px; }
+.att-row select { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; color: var(--white); font-size: 14px; font-weight: 700; padding: 7px 8px; outline: none; -webkit-appearance: none; appearance: none; width: 80px; text-align: center; }
+.att-row select:focus { border-color: var(--accent); }
+.correct-value { font-size: 12px; font-weight: 700; border-radius: 6px; padding: 3px 7px; white-space: nowrap; opacity: 0; transition: opacity 0.3s; flex-shrink: 0; color: var(--green); background: rgba(30,160,90,0.12); }
+.correct-value.wrong-shown { color: var(--red); background: rgba(200,50,50,0.12); }
+.correct-value.visible { opacity: 1; }
+.submit-btn { width: 100%; padding: 15px; background: var(--accent); color: var(--white); border: none; border-radius: 12px; font-size: 15px; font-weight: 700; letter-spacing: 1px; cursor: pointer; margin-top: 6px; transition: opacity 0.2s; }
+.submit-btn:disabled { opacity: 0.4; }
+.submit-btn:active   { opacity: 0.8; }
 
-  .back-btn {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 12px; color: var(--muted); cursor: pointer;
-    margin-bottom: 16px; user-select: none;
-    background: none; border: none; padding: 0;
-  }
-  .back-btn:active { color: var(--white); }
+/* ── SCORE ── */
+.score-screen { align-items: center; justify-content: center; text-align: center; }
+.score-title  { font-size: 20px; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px; }
+.score-level-badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1px; padding: 4px 14px; border-radius: 6px; border: 1px solid; margin-bottom: 20px; }
+.score-number  { font-size: 52px; font-weight: 800; color: var(--accent); line-height: 1; }
+.score-sub     { font-size: 13px; color: var(--muted); margin-top: 6px; margin-bottom: 14px; }
+.score-divider { width: 100%; height: 1px; background: var(--border); margin-bottom: 14px; }
+.score-percent { font-size: 30px; font-weight: 800; }
+.score-acc-sub { font-size: 12px; color: var(--muted); margin-top: 4px; margin-bottom: 24px; }
+.score-btn { width: 220px; padding: 13px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+.score-btn.primary   { background: var(--accent); color: var(--white); }
+.score-btn.secondary { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+.score-btn:active { opacity: 0.8; }
+.history-block { width: 100%; margin-bottom: 18px; }
+.history-title { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
+.history-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: var(--card); border-radius: 8px; margin-bottom: 5px; font-size: 12px; }
+.history-round { color: var(--muted); }
+.history-score { font-weight: 700; }
 
-  /* ── START SCREEN ── */
-  .mode-card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
-    border: 1.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    cursor: pointer;
-    transition: background 0.15s;
-    -webkit-user-select: none;
-  }
-  .mode-card:active { background: #1e2336; }
-  .mode-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
-  .mode-info { flex: 1; min-width: 0; }
-  .mode-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .mode-desc  { font-size: 11px; color: var(--muted); line-height: 1.6; }
-  .mode-rule  { font-size: 10px; color: #5a5f78; margin-top: 4px; }
-  .mode-btn {
-    color: var(--white); border: none; border-radius: 8px;
-    padding: 10px 14px; font-size: 13px; font-weight: 700;
-    cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  }
+/* ── CALC MODE ── */
+.calc-scenario { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+.calc-scenario-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px; }
+.calc-params-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.calc-param-box { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+.calc-param-lbl { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+.calc-param-val { font-size: 18px; font-weight: 800; line-height: 1.1; }
+.calc-param-val.pos { color: var(--green); }
+.calc-param-val.neg { color: var(--red); }
+.calc-param-val.neu { color: #3c78dc; }
+.calc-timer-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.calc-timer-num { font-size: 32px; font-weight: 800; color: var(--yellow); line-height: 1; transition: color 0.3s; }
+.calc-timer-num.urgent { color: var(--red); }
+.calc-timer-bar-outer { flex: 1; height: 4px; background: rgba(220,170,30,0.15); border-radius: 2px; overflow: hidden; margin: 0 12px; }
+.calc-timer-bar { height: 100%; background: var(--yellow); transition: width 0.5s linear; }
+.calc-timer-bar.urgent { background: var(--red); }
+.calc-table-wrap { overflow-x: auto; margin-bottom: 10px; }
+.calc-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 340px; }
+.calc-table th { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); white-space: nowrap; }
+.calc-table td { padding: 7px 6px; border-bottom: 1px solid rgba(40,45,60,0.6); vertical-align: middle; }
+.calc-table tr:last-child td { border-bottom: none; }
+.calc-time-label { font-size: 15px; font-weight: 800; color: var(--accent); white-space: nowrap; }
+.calc-frac { font-size: 10px; color: var(--muted); margin-left: 4px; }
+.calc-input { background: var(--input-bg); border: 1px solid var(--border); border-radius: 7px; color: var(--white); font-size: 16px; font-weight: 700; padding: 5px 8px; width: 78px; outline: none; text-align: center; -webkit-appearance: none; }
+.calc-input:focus { border-color: var(--accent); }
+.calc-input.correct { border-color: var(--green); background: rgba(30,160,90,0.1); color: var(--green); }
+.calc-input.wrong   { border-color: var(--red);   background: rgba(200,50,50,0.1); color: var(--red); }
+.calc-input:disabled { pointer-events: none; }
+.calc-solution { background: rgba(200,50,50,0.07); border: 1px solid rgba(200,50,50,0.22); border-radius: 8px; padding: 8px 12px; font-size: 11px; color: #e07080; line-height: 1.8; margin: 2px 0 8px; }
+.calc-solution strong { color: #ff99aa; font-size: 10px; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }
+.calc-solution-step { color: #6a7a8a; font-size: 10.5px; }
+.new-task-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: opacity 0.2s; color: var(--white); }
+.new-task-btn:active { opacity: 0.8; }
+.calc-score-row { display: flex; gap: 10px; margin-top: 12px; }
+.calc-score-box { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-align: center; }
+.calc-score-num { font-size: 22px; font-weight: 800; }
+.calc-score-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+.help-toggle { font-size: 11px; color: var(--muted); cursor: pointer; padding: 6px 0; user-select: none; display: flex; align-items: center; gap: 5px; }
+.help-body { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; color: #6a7a9a; line-height: 1.75; display: none; }
+.help-body.open { display: block; }
+.help-body .hl { color: var(--accent); }
 
-  /* ── LEVEL SELECT (Memory) ── */
-  .level-card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    border: 1.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    cursor: pointer;
-    transition: background 0.15s;
-    -webkit-user-select: none;
-  }
-  .level-card:active { background: #1e2336; }
-  .level-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
-  .level-info { flex: 1; min-width: 0; }
-  .level-title  { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-  .level-params { font-size: 11px; color: var(--muted); line-height: 1.65; }
-  .level-rule   { font-size: 10px; color: #5a5f78; margin-top: 4px; }
-  .level-btn {
-    color: var(--white); border: none; border-radius: 8px;
-    padding: 10px 14px; font-size: 13px; font-weight: 700;
-    cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  }
+/* ── TEST 3: ZIELWERT ── */
+.zw-task-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.zw-task-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px; }
+.zw-task-text { font-size: 14px; line-height: 1.75; color: var(--white); margin-bottom: 14px; }
+.zw-task-text .highlight { color: var(--yellow); font-weight: 700; }
+.zw-answer-wrap { display: flex; gap: 8px; align-items: center; }
+.zw-answer-input { background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 8px; color: var(--white); font-size: 22px; font-weight: 800; padding: 8px 14px; outline: none; -webkit-appearance: none; text-align: center; min-width: 0; flex: 1; max-width: 200px; }
+.zw-answer-input:focus { border-color: var(--t3color); }
+.zw-answer-input.correct { border-color: var(--green); background: rgba(30,160,90,0.08); color: var(--green); }
+.zw-answer-input.wrong   { border-color: var(--red); background: rgba(200,50,50,0.08); color: var(--red); }
+.zw-answer-unit { font-size: 13px; color: var(--muted); }
+.zw-check-btn { background: var(--t3color); color: var(--white); border: none; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.zw-check-btn:active { opacity: 0.8; }
+.zw-check-btn:disabled { opacity: 0.35; pointer-events: none; }
+.zw-solution { background: rgba(200,50,50,0.07); border: 1px solid rgba(200,50,50,0.22); border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 12px; color: #e07080; line-height: 1.9; display: none; }
+.zw-solution.show { display: block; }
+.zw-solution strong { color: #ff99aa; font-size: 11px; display: block; margin-bottom: 3px; }
+.zw-solution .step { color: #6a7a8a; font-size: 11px; }
+.zw-tip { background: rgba(80,200,200,0.07); border: 1px solid rgba(80,200,200,0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; color: #80d8d8; line-height: 1.75; }
+.zw-tip strong { color: #aaeaea; }
+.zw-score-row { display: flex; gap: 10px; margin-top: 12px; }
+.zw-score-box { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-align: center; }
+.zw-score-num { font-size: 22px; font-weight: 800; }
+.zw-score-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+.zw-btn-row { display: flex; gap: 8px; margin-top: 10px; }
 
-  /* ── MEMORY: DISPLAY SCREEN ── */
-  .screen-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .round-label    { font-size: 16px; font-weight: 700; }
-  .countdown-block { text-align: right; }
-  .countdown-num  { font-size: 30px; font-weight: 800; color: var(--yellow); line-height: 1; }
-  .countdown-text { font-size: 10px; color: var(--yellow); letter-spacing: 1px; }
-  .countdown-num.urgent  { color: var(--red); }
-  .countdown-text.urgent { color: var(--red); }
+/* ── TEST 4: CHINESISCHE ZEICHEN ── */
+.cz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.cz-progress { font-size: 12px; color: var(--muted); }
+.cz-timer-wrap { margin-bottom: 14px; }
+.cz-timer-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.cz-timer-num { font-size: 28px; font-weight: 800; color: var(--t4color); line-height: 1; min-width: 36px; transition: color 0.3s; }
+.cz-timer-num.urgent { color: var(--red); }
+.cz-timer-bar-outer { flex: 1; height: 5px; background: rgba(80,200,200,0.12); border-radius: 3px; overflow: hidden; }
+.cz-timer-bar { height: 100%; background: var(--t4color); transition: width 0.2s linear; border-radius: 3px; }
+.cz-timer-bar.urgent { background: var(--red); }
 
-  .param-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 11px 16px;
-    margin-bottom: 9px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .param-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
-  .param-inner  { flex: 1; min-width: 0; }
-  .param-label  { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 2px; }
-  .param-value  { font-size: 30px; font-weight: 800; line-height: 1.1; }
-  .param-unit   { font-size: 12px; color: var(--muted); }
-  .param-att-dir { font-size: 12px; color: var(--yellow); font-weight: 600; margin-top: 1px; }
+/* Mapping display */
+.cz-map-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; overflow-x: auto; }
+.cz-map-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
+.cz-map-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.cz-map-item { background: var(--input-bg); border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px; text-align: center; min-width: 42px; }
+.cz-symbol { font-size: 20px; line-height: 1.1; }
+.cz-num    { font-size: 13px; font-weight: 800; color: var(--t4color); margin-top: 2px; }
 
-  /* ── MEMORY: INPUT SCREEN ── */
-  .input-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .level-badge-sm {
-    font-size: 10px; font-weight: 700; letter-spacing: 1px;
-    padding: 3px 10px; border-radius: 4px; border: 1px solid;
-  }
+/* Chain display */
+.cz-chain-card { background: var(--card); border: 1.5px solid rgba(80,200,200,0.3); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+.cz-chain-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px; }
+.cz-chain-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.cz-chain-item { flex-shrink: 0; text-align: center; }
+.cz-chain-sym { font-size: 26px; line-height: 1.1; display: block; }
+.cz-chain-arrow { font-size: 11px; color: var(--muted); margin: 2px 0; }
+.cz-chain-val { font-size: 11px; color: var(--muted); }
+.cz-chain-item.active .cz-chain-sym { filter: brightness(1.2); }
+.cz-chain-item.active .cz-chain-val { color: var(--t4color); font-weight: 700; }
+.cz-chain-plus { font-size: 18px; color: var(--muted); align-self: center; flex-shrink: 0; padding-top: 8px; }
 
-  .input-card {
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .input-card.correct { background: #122d1e; border-color: var(--green) !important; }
-  .input-card.wrong   { background: #301212; border-color: var(--red)   !important; }
+/* Current question */
+.cz-question-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: center; }
+.cz-question-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
+.cz-question-sym { font-size: 48px; line-height: 1.1; margin-bottom: 4px; }
+.cz-question-plus { font-size: 16px; color: var(--muted); margin-bottom: 6px; }
+.cz-question-prev { font-size: 32px; }
+.cz-question-eq   { font-size: 13px; color: var(--muted); margin: 6px 0 10px; }
+.cz-answer-wrap { display: flex; gap: 8px; align-items: center; justify-content: center; }
+.cz-answer-input { background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 8px; color: var(--white); font-size: 28px; font-weight: 800; padding: 8px 14px; outline: none; text-align: center; width: 100px; -webkit-appearance: none; }
+.cz-answer-input:focus { border-color: var(--t4color); }
+.cz-answer-input.correct { border-color: var(--green); background: rgba(30,160,90,0.1); color: var(--green); }
+.cz-answer-input.wrong   { border-color: var(--red); background: rgba(200,50,50,0.1); color: var(--red); }
+.cz-submit-btn { background: var(--t4color); color: #0f1117; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 800; cursor: pointer; }
+.cz-submit-btn:active { opacity: 0.8; }
+.cz-result-badge { font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 6px; margin-top: 8px; display: none; }
+.cz-result-badge.show { display: inline-block; }
+.cz-result-badge.ok  { background: rgba(30,160,90,0.15); color: var(--green); }
+.cz-result-badge.err { background: rgba(200,50,50,0.15); color: var(--red); }
+.cz-score-row { display: flex; gap: 10px; margin-top: 12px; }
+.cz-score-box { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-align: center; }
+.cz-score-num { font-size: 22px; font-weight: 800; }
+.cz-score-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+.cz-block-num { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
 
-  .input-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
-  .input-body   { flex: 1; min-width: 0; }
-  .input-title  { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 3px; }
-
-  .input-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .input-row input {
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--white);
-    font-size: 18px; font-weight: 700;
-    padding: 6px 10px;
-    outline: none;
-    -webkit-appearance: none;
-    min-width: 0;
-  }
-  .input-row input:focus { border-color: var(--accent); }
-  .input-row input.w-num { width: 110px; }
-  .input-row input.w-dir { width: 100px; }
-
-  .input-hint { font-size: 10px; color: var(--muted); white-space: nowrap; }
-
-  .att-row { display: flex; align-items: center; gap: 6px; }
-  .att-row select {
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--white);
-    font-size: 14px; font-weight: 700;
-    padding: 7px 8px;
-    outline: none;
-    -webkit-appearance: none;
-    appearance: none;
-    width: 80px;
-    text-align: center;
-  }
-  .att-row select:focus { border-color: var(--accent); }
-
-  .correct-value {
-    font-size: 12px; font-weight: 700;
-    border-radius: 6px; padding: 3px 7px;
-    white-space: nowrap; opacity: 0;
-    transition: opacity 0.3s; flex-shrink: 0;
-    color: var(--green); background: rgba(30,160,90,0.12);
-  }
-  .correct-value.wrong-shown { color: var(--red); background: rgba(200,50,50,0.12); }
-  .correct-value.visible { opacity: 1; }
-
-  .submit-btn {
-    width: 100%; padding: 15px;
-    background: var(--accent); color: var(--white);
-    border: none; border-radius: 12px;
-    font-size: 15px; font-weight: 700; letter-spacing: 1px;
-    cursor: pointer; margin-top: 6px;
-    transition: opacity 0.2s;
-  }
-  .submit-btn:disabled { opacity: 0.4; }
-  .submit-btn:active   { opacity: 0.8; }
-
-  /* ── SCORE SCREEN ── */
-  .score-screen { align-items: center; justify-content: center; text-align: center; }
-  .score-title  { font-size: 20px; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px; }
-  .score-level-badge {
-    display: inline-block;
-    font-size: 11px; font-weight: 700; letter-spacing: 1px;
-    padding: 4px 14px; border-radius: 6px; border: 1px solid;
-    margin-bottom: 20px;
-  }
-  .score-number  { font-size: 52px; font-weight: 800; color: var(--accent); line-height: 1; }
-  .score-sub     { font-size: 13px; color: var(--muted); margin-top: 6px; margin-bottom: 14px; }
-  .score-divider { width: 100%; height: 1px; background: var(--border); margin-bottom: 14px; }
-  .score-percent { font-size: 30px; font-weight: 800; }
-  .score-acc-sub { font-size: 12px; color: var(--muted); margin-top: 4px; margin-bottom: 24px; }
-  .score-btn {
-    width: 220px; padding: 13px;
-    border: none; border-radius: 12px;
-    font-size: 14px; font-weight: 700;
-    cursor: pointer; margin-bottom: 10px;
-  }
-  .score-btn.primary   { background: var(--accent); color: var(--white); }
-  .score-btn.secondary { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
-  .score-btn:active { opacity: 0.8; }
-  .history-block { width: 100%; margin-bottom: 18px; }
-  .history-title { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
-  .history-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 7px 12px;
-    background: var(--card); border-radius: 8px; margin-bottom: 5px;
-    font-size: 12px;
-  }
-  .history-round { color: var(--muted); }
-  .history-score { font-weight: 700; }
-
-  /* ── CALC MODE ── */
-  .calc-scenario {
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-  }
-  .calc-scenario-label {
-    font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px;
-  }
-  .calc-params-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .calc-param-box {
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-  }
-  .calc-param-lbl { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
-  .calc-param-val {
-    font-size: 18px; font-weight: 800; line-height: 1.1;
-  }
-  .calc-param-val.pos { color: var(--green); }
-  .calc-param-val.neg { color: var(--red); }
-  .calc-param-val.neu { color: #3c78dc; }
-
-  .calc-timer-row {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .calc-timer-num {
-    font-size: 32px; font-weight: 800; color: var(--yellow); line-height: 1;
-    transition: color 0.3s;
-  }
-  .calc-timer-num.urgent { color: var(--red); }
-  .calc-timer-bar-outer {
-    flex: 1; height: 4px; background: rgba(220,170,30,0.15);
-    border-radius: 2px; overflow: hidden; margin: 0 12px;
-  }
-  .calc-timer-bar { height: 100%; background: var(--yellow); transition: width 0.5s linear; }
-  .calc-timer-bar.urgent { background: var(--red); }
-
-  .calc-table-wrap { overflow-x: auto; margin-bottom: 10px; }
-  .calc-table {
-    width: 100%; border-collapse: collapse; font-size: 13px;
-    min-width: 340px;
-  }
-  .calc-table th {
-    font-size: 10px; color: var(--muted); letter-spacing: 1px;
-    text-align: left; padding: 6px 8px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(0,0,0,0.2);
-    white-space: nowrap;
-  }
-  .calc-table td {
-    padding: 7px 6px; border-bottom: 1px solid rgba(40,45,60,0.6);
-    vertical-align: middle;
-  }
-  .calc-table tr:last-child td { border-bottom: none; }
-
-  .calc-time-label {
-    font-size: 15px; font-weight: 800; color: var(--accent);
-    white-space: nowrap;
-  }
-  .calc-frac { font-size: 10px; color: var(--muted); margin-left: 4px; }
-
-  .calc-input {
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--white);
-    font-size: 16px; font-weight: 700;
-    padding: 5px 8px; width: 78px;
-    outline: none; text-align: center;
-    -webkit-appearance: none;
-  }
-  .calc-input:focus { border-color: var(--accent); }
-  .calc-input.correct { border-color: var(--green); background: rgba(30,160,90,0.1); color: var(--green); }
-  .calc-input.wrong   { border-color: var(--red);   background: rgba(200,50,50,0.1);  color: var(--red);   }
-  .calc-input:disabled { pointer-events: none; }
-
-  .calc-unit { font-size: 10px; color: var(--muted); white-space: nowrap; }
-
-  .calc-solution {
-    background: rgba(200,50,50,0.07);
-    border: 1px solid rgba(200,50,50,0.22);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 11px;
-    color: #e07080;
-    line-height: 1.8;
-    margin: 2px 0 8px;
-  }
-  .calc-solution strong {
-    color: #ff99aa; font-size: 10px; letter-spacing: 0.5px;
-    display: block; margin-bottom: 2px;
-  }
-  .calc-solution-step { color: #6a7a8a; font-size: 10.5px; }
-
-  .new-task-btn {
-    width: 100%; padding: 14px;
-    border: none; border-radius: 12px;
-    font-size: 14px; font-weight: 700; letter-spacing: 1px;
-    cursor: pointer; transition: opacity 0.2s;
-    color: var(--white);
-  }
-  .new-task-btn:active { opacity: 0.8; }
-
-  .calc-score-row {
-    display: flex; gap: 10px; margin-top: 12px;
-  }
-  .calc-score-box {
-    flex: 1; background: var(--card); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 10px; text-align: center;
-  }
-  .calc-score-num { font-size: 22px; font-weight: 800; }
-  .calc-score-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
-
-  /* Help tooltip */
-  .help-toggle {
-    font-size: 11px; color: var(--muted); cursor: pointer;
-    padding: 6px 0; user-select: none; display: flex; align-items: center; gap: 5px;
-  }
-  .help-body {
-    background: rgba(0,0,0,0.25); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
-    font-size: 11px; color: #6a7a9a; line-height: 1.75;
-    display: none;
-  }
-  .help-body.open { display: block; }
-  .help-body .hl { color: var(--accent); }
-
-  .hidden { display: none !important; }
+/* Intro card for tests */
+.intro-card { background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; font-size: 12px; color: #8090a8; line-height: 1.8; }
+.intro-card h3 { font-size: 13px; color: var(--white); font-weight: 700; margin-bottom: 8px; }
+.intro-card .tip { background: rgba(80,200,200,0.07); border: 1px solid rgba(80,200,200,0.2); border-radius: 7px; padding: 8px 12px; color: #80d8d8; margin-top: 10px; font-size: 11px; }
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- ══════════════════════════ MAIN HOME ══════════════════════════ -->
+<!-- ══════════════════════════ HOME ══════════════════════════ -->
 <div id="screen-home" class="screen active">
   <div class="title-block">
     <div class="game-title">✈ AVIATION TRAINER</div>
-    <div class="game-sub">Wähle deinen Trainingsmodus</div>
+    <div class="game-sub">4 Tests · Piloteneignungstest Vorbereitung</div>
   </div>
 
-  <!-- Mode: Memory -->
   <div class="mode-card" onclick="showScreen('screen-memory-levels')" style="border-color:var(--accent)">
     <div class="mode-accent" style="background:var(--accent)"></div>
     <div class="mode-info">
-      <span class="level-badge" style="color:var(--accent);border-color:var(--accent)">MODUS 1</span>
+      <span class="level-badge" style="color:var(--accent);border-color:var(--accent)">TEST 1</span>
       <div class="mode-title">🧠 Cockpit Memory</div>
-      <div class="mode-desc">
-        Merke dir Kompasskurs, Geschwindigkeit, Luftlage und mehr – und gib sie nach dem Timer ein.
-      </div>
+      <div class="mode-desc">Merke dir Cockpit-Parameter und gib sie nach dem Timer ein.</div>
       <div class="mode-rule">3 Level · 5 Runden · 6 Sek Anzeige</div>
     </div>
-    <button class="mode-btn" style="background:var(--accent)"
-            onclick="showScreen('screen-memory-levels');event.stopPropagation()">START</button>
+    <button class="mode-btn" style="background:var(--accent)" onclick="showScreen('screen-memory-levels');event.stopPropagation()">START</button>
   </div>
 
-  <!-- Mode: Calculator -->
   <div class="mode-card" onclick="startCalcMode('easy')" style="border-color:var(--green)">
     <div class="mode-accent" style="background:var(--green)"></div>
     <div class="mode-info">
-      <span class="level-badge" style="color:var(--green);border-color:var(--green)">MODUS 2</span>
+      <span class="level-badge" style="color:var(--green);border-color:var(--green)">TEST 2</span>
       <div class="mode-title">✈ Kursrechner</div>
-      <div class="mode-desc">
-        Berechne Grad, Höhe und Geschwindigkeit für jeden Zeitpunkt – genau wie im echten Pilotentest.
-      </div>
+      <div class="mode-desc">Berechne Grad, Höhe und Speed für jeden Zeitpunkt – wie im Pilotentest.</div>
       <div class="mode-rule">
-        <span style="color:var(--green)">LEICHT – Kein Timer</span> &nbsp;|&nbsp;
+        <span style="color:var(--green);cursor:pointer" onclick="startCalcMode('easy');event.stopPropagation()">LEICHT – Kein Timer</span>
+        &nbsp;|&nbsp;
         <span style="color:var(--red);cursor:pointer" onclick="startCalcMode('hard');event.stopPropagation()">SCHWER – 60 Sek ▶</span>
       </div>
     </div>
-    <button class="mode-btn" style="background:var(--green)"
-            onclick="startCalcMode('easy');event.stopPropagation()">START</button>
+    <button class="mode-btn" style="background:var(--green)" onclick="startCalcMode('easy');event.stopPropagation()">START</button>
+  </div>
+
+  <div class="mode-card" onclick="startZielwert()" style="border-color:var(--t3color)">
+    <div class="mode-accent" style="background:var(--t3color)"></div>
+    <div class="mode-info">
+      <span class="level-badge" style="color:var(--t3color);border-color:var(--t3color)">TEST 3</span>
+      <div class="mode-title">📐 Zielwertberechnung</div>
+      <div class="mode-desc">Textaufgaben: Geschwindigkeit, Distanz, Zeit. Kein Multiple-Choice!</div>
+      <div class="mode-rule">Freie Eingabe · Lösungsweg bei Fehler</div>
+    </div>
+    <button class="mode-btn" style="background:var(--t3color)" onclick="startZielwert();event.stopPropagation()">START</button>
+  </div>
+
+  <div class="mode-card" onclick="startChinesisch()" style="border-color:var(--t4color)">
+    <div class="mode-accent" style="background:var(--t4color)"></div>
+    <div class="mode-info">
+      <span class="level-badge" style="color:var(--t4color);border-color:var(--t4color)">TEST 4</span>
+      <div class="mode-title">🀄 Zeichen-Additions-Test</div>
+      <div class="mode-desc">Addiere aufeinanderfolgende Symbol-Werte unter Zeitdruck.</div>
+      <div class="mode-rule">15 Sek pro Block · Konzentrations-Test</div>
+    </div>
+    <button class="mode-btn" style="background:var(--t4color);color:#0f1117" onclick="startChinesisch();event.stopPropagation()">START</button>
   </div>
 </div>
 
@@ -461,7 +320,6 @@
     <div class="game-title">🧠 COCKPIT MEMORY</div>
     <div class="game-sub">Wähle dein Level</div>
   </div>
-
   <div class="level-card" style="border-color:var(--easy)" onclick="selectMemoryLevel('easy')">
     <div class="level-accent" style="background:var(--easy)"></div>
     <div class="level-info">
@@ -470,10 +328,8 @@
       <div class="level-params">🧭 Kompasskurs · 💨 Geschwindigkeit · 🔄 Luftlage</div>
       <div class="level-rule">3 Parameter · 5 Runden · 6 Sekunden</div>
     </div>
-    <button class="level-btn" style="background:var(--easy)"
-            onclick="selectMemoryLevel('easy');event.stopPropagation()">START</button>
+    <button class="level-btn" style="background:var(--easy)" onclick="selectMemoryLevel('easy');event.stopPropagation()">START</button>
   </div>
-
   <div class="level-card" style="border-color:var(--medium)" onclick="selectMemoryLevel('medium')">
     <div class="level-accent" style="background:var(--medium)"></div>
     <div class="level-info">
@@ -482,10 +338,8 @@
       <div class="level-params">🧭 Kurs · 💨 Speed · 🔄 Luftlage · 📐 Höhe (500er)</div>
       <div class="level-rule">4 Parameter · 5 Runden · 6 Sekunden</div>
     </div>
-    <button class="level-btn" style="background:var(--medium)"
-            onclick="selectMemoryLevel('medium');event.stopPropagation()">START</button>
+    <button class="level-btn" style="background:var(--medium)" onclick="selectMemoryLevel('medium');event.stopPropagation()">START</button>
   </div>
-
   <div class="level-card" style="border-color:var(--hard)" onclick="selectMemoryLevel('hard')">
     <div class="level-accent" style="background:var(--hard)"></div>
     <div class="level-info">
@@ -494,8 +348,7 @@
       <div class="level-params">🧭 Kurs · 💨 Speed · 🔄 Luftlage · 📐 Höhe · 📈 Steigrate</div>
       <div class="level-rule">5 Parameter · 5 Runden · 6 Sekunden</div>
     </div>
-    <button class="level-btn" style="background:var(--hard)"
-            onclick="selectMemoryLevel('hard');event.stopPropagation()">START</button>
+    <button class="level-btn" style="background:var(--hard)" onclick="selectMemoryLevel('hard');event.stopPropagation()">START</button>
   </div>
 </div>
 
@@ -508,42 +361,11 @@
       <div class="countdown-text" id="d-phase">MEMORIZE</div>
     </div>
   </div>
-  <div class="param-card">
-    <div class="param-accent" style="background:var(--compass)"></div>
-    <div class="param-inner">
-      <div class="param-label">🧭 KOMPASSKURS</div>
-      <div><span class="param-value" id="d-compass">—</span><span class="param-unit"> °</span></div>
-    </div>
-  </div>
-  <div class="param-card">
-    <div class="param-accent" style="background:var(--speed)"></div>
-    <div class="param-inner">
-      <div class="param-label">💨 GESCHWINDIGKEIT</div>
-      <div><span class="param-value" id="d-speed">—</span><span class="param-unit"> kn</span></div>
-    </div>
-  </div>
-  <div class="param-card">
-    <div class="param-accent" style="background:var(--attitude)"></div>
-    <div class="param-inner">
-      <div class="param-label">🔄 LUFTLAGE</div>
-      <div><span class="param-value" id="d-att-deg">—</span><span class="param-unit">°</span></div>
-      <div class="param-att-dir" id="d-att-dir">—</div>
-    </div>
-  </div>
-  <div class="param-card hidden" id="d-alt-card">
-    <div class="param-accent" style="background:var(--alt)"></div>
-    <div class="param-inner">
-      <div class="param-label">📐 HÖHE</div>
-      <div><span class="param-value" id="d-alt">—</span><span class="param-unit"> ft</span></div>
-    </div>
-  </div>
-  <div class="param-card hidden" id="d-climb-card">
-    <div class="param-accent" style="background:#c85078"></div>
-    <div class="param-inner">
-      <div class="param-label">📈 STEIGRATE</div>
-      <div><span class="param-value" id="d-climb">—</span><span class="param-unit"> ×100 ft/min</span></div>
-    </div>
-  </div>
+  <div class="param-card"><div class="param-accent" style="background:var(--compass)"></div><div class="param-inner"><div class="param-label">🧭 KOMPASSKURS</div><div><span class="param-value" id="d-compass">—</span><span class="param-unit"> °</span></div></div></div>
+  <div class="param-card"><div class="param-accent" style="background:var(--speed)"></div><div class="param-inner"><div class="param-label">💨 GESCHWINDIGKEIT</div><div><span class="param-value" id="d-speed">—</span><span class="param-unit"> kn</span></div></div></div>
+  <div class="param-card"><div class="param-accent" style="background:var(--attitude)"></div><div class="param-inner"><div class="param-label">🔄 LUFTLAGE</div><div><span class="param-value" id="d-att-deg">—</span><span class="param-unit">°</span></div><div class="param-att-dir" id="d-att-dir">—</div></div></div>
+  <div class="param-card hidden" id="d-alt-card"><div class="param-accent" style="background:var(--alt)"></div><div class="param-inner"><div class="param-label">📐 HÖHE</div><div><span class="param-value" id="d-alt">—</span><span class="param-unit"> ft</span></div></div></div>
+  <div class="param-card hidden" id="d-climb-card"><div class="param-accent" style="background:#c85078"></div><div class="param-inner"><div class="param-label">📈 STEIGRATE</div><div><span class="param-value" id="d-climb">—</span><span class="param-unit"> ×100 ft/min</span></div></div></div>
 </div>
 
 <!-- ══════════════════════════ MEMORY: INPUT ══════════════════════════ -->
@@ -552,65 +374,11 @@
     <div class="round-label" id="i-round">Runde 1 / 5</div>
     <span class="level-badge-sm" id="i-badge" style="color:var(--easy);border-color:var(--easy)">EASY</span>
   </div>
-  <div class="input-card" id="card-compass">
-    <div class="input-accent" style="background:var(--compass)"></div>
-    <div class="input-body">
-      <div class="input-title">🧭 KOMPASSKURS</div>
-      <div class="input-row">
-        <input type="number" id="in-compass" class="w-num" placeholder="0–365" inputmode="numeric" min="0" max="365">
-        <span class="input-hint">°</span>
-      </div>
-    </div>
-    <div class="correct-value" id="cv-compass"></div>
-  </div>
-  <div class="input-card" id="card-speed">
-    <div class="input-accent" style="background:var(--speed)"></div>
-    <div class="input-body">
-      <div class="input-title">💨 GESCHWINDIGKEIT</div>
-      <div class="input-row">
-        <input type="number" id="in-speed" class="w-num" placeholder="0–300" inputmode="numeric" min="0" max="300">
-        <span class="input-hint">kn</span>
-      </div>
-    </div>
-    <div class="correct-value" id="cv-speed"></div>
-  </div>
-  <div class="input-card" id="card-att">
-    <div class="input-accent" style="background:var(--attitude)"></div>
-    <div class="input-body">
-      <div class="input-title">🔄 LUFTLAGE</div>
-      <div class="att-row">
-        <input type="number" id="in-att-deg" class="w-dir" placeholder="Grad" inputmode="numeric" min="0" max="90" style="width:90px">
-        <select id="in-att-dir">
-          <option value="Gerade">Gerade</option>
-          <option value="Links">◀ Links</option>
-          <option value="Rechts">Rechts ▶</option>
-        </select>
-      </div>
-    </div>
-    <div class="correct-value" id="cv-att"></div>
-  </div>
-  <div class="input-card hidden" id="card-alt">
-    <div class="input-accent" style="background:var(--alt)"></div>
-    <div class="input-body">
-      <div class="input-title">📐 HÖHE</div>
-      <div class="input-row">
-        <input type="number" id="in-alt" class="w-num" placeholder="ft" inputmode="numeric" min="0" max="15000" step="500">
-        <span class="input-hint">ft (×500)</span>
-      </div>
-    </div>
-    <div class="correct-value" id="cv-alt"></div>
-  </div>
-  <div class="input-card hidden" id="card-climb">
-    <div class="input-accent" style="background:#c85078"></div>
-    <div class="input-body">
-      <div class="input-title">📈 STEIGRATE</div>
-      <div class="input-row">
-        <input type="text" id="in-climb" class="w-num" placeholder="+1.5 / −0.5" inputmode="decimal">
-        <span class="input-hint">×100 ft/min</span>
-      </div>
-    </div>
-    <div class="correct-value" id="cv-climb"></div>
-  </div>
+  <div class="input-card" id="card-compass"><div class="input-accent" style="background:var(--compass)"></div><div class="input-body"><div class="input-title">🧭 KOMPASSKURS</div><div class="input-row"><input type="number" id="in-compass" class="w-num" placeholder="0–365" inputmode="numeric" min="0" max="365"><span class="input-hint">°</span></div></div><div class="correct-value" id="cv-compass"></div></div>
+  <div class="input-card" id="card-speed"><div class="input-accent" style="background:var(--speed)"></div><div class="input-body"><div class="input-title">💨 GESCHWINDIGKEIT</div><div class="input-row"><input type="number" id="in-speed" class="w-num" placeholder="0–300" inputmode="numeric" min="0" max="300"><span class="input-hint">kn</span></div></div><div class="correct-value" id="cv-speed"></div></div>
+  <div class="input-card" id="card-att"><div class="input-accent" style="background:var(--attitude)"></div><div class="input-body"><div class="input-title">🔄 LUFTLAGE</div><div class="att-row"><input type="number" id="in-att-deg" class="w-dir" placeholder="Grad" inputmode="numeric" min="0" max="90" style="width:90px"><select id="in-att-dir"><option value="Gerade">Gerade</option><option value="Links">◀ Links</option><option value="Rechts">Rechts ▶</option></select></div></div><div class="correct-value" id="cv-att"></div></div>
+  <div class="input-card hidden" id="card-alt"><div class="input-accent" style="background:var(--alt)"></div><div class="input-body"><div class="input-title">📐 HÖHE</div><div class="input-row"><input type="number" id="in-alt" class="w-num" placeholder="ft" inputmode="numeric" min="0" max="15000" step="500"><span class="input-hint">ft (×500)</span></div></div><div class="correct-value" id="cv-alt"></div></div>
+  <div class="input-card hidden" id="card-climb"><div class="input-accent" style="background:#c85078"></div><div class="input-body"><div class="input-title">📈 STEIGRATE</div><div class="input-row"><input type="text" id="in-climb" class="w-num" placeholder="+1.5 / −0.5" inputmode="decimal"><span class="input-hint">×100 ft/min</span></div></div><div class="correct-value" id="cv-climb"></div></div>
   <button class="submit-btn" id="submit-btn" onclick="memoryCheckAnswers()">ABGEBEN</button>
 </div>
 
@@ -624,7 +392,7 @@
   <div class="score-percent" id="s-percent">0%</div>
   <div class="score-acc-sub">Genauigkeit</div>
   <div class="history-block" id="s-history"></div>
-  <button class="score-btn primary"   onclick="memoryPlayAgain()">NOCHMAL SPIELEN</button>
+  <button class="score-btn primary" onclick="memoryPlayAgain()">NOCHMAL SPIELEN</button>
   <button class="score-btn secondary" onclick="showScreen('screen-home')">HAUPTMENÜ</button>
 </div>
 
@@ -634,471 +402,496 @@
     <button class="back-btn" style="margin-bottom:0" onclick="showScreen('screen-home')">◀ Hauptmenü</button>
     <span id="calc-mode-badge" class="level-badge-sm" style="color:var(--green);border-color:var(--green)">LEICHT</span>
   </div>
-
-  <!-- Timer (hard mode only) -->
   <div id="calc-timer-wrap" class="hidden" style="margin-bottom:14px;">
     <div class="calc-timer-row">
       <div class="calc-timer-num" id="calc-timer-num">60</div>
-      <div class="calc-timer-bar-outer">
-        <div class="calc-timer-bar" id="calc-timer-bar" style="width:100%"></div>
-      </div>
+      <div class="calc-timer-bar-outer"><div class="calc-timer-bar" id="calc-timer-bar" style="width:100%"></div></div>
       <div style="font-size:10px;color:var(--muted);letter-spacing:1px;">SEK</div>
     </div>
   </div>
-
-  <!-- Help -->
-  <div class="help-toggle" onclick="toggleCalcHelp()">
-    <span id="calc-help-arrow">▶</span> Wie funktioniert das?
-  </div>
+  <div class="help-toggle" onclick="toggleCalcHelp()"><span id="calc-help-arrow">▶</span> Wie funktioniert das?</div>
   <div class="help-body" id="calc-help-body">
-    Du bekommst zufällige Aufgaben wie im Pilotentest. Für jeden der <span class="hl">4 Zeitpunkte (15s, 30s, 45s, 60s)</span> musst du berechnen welche Werte du erreicht haben musst.<br><br>
-    <b>Geschwindigkeit:</b> Gib die <span class="hl">absolute Geschwindigkeit</span> ein (z.B. 130 kn).<br>
-    Nach Auswertung siehst du bei falschen Antworten den vollständigen Lösungsweg.
+    Für jeden der <span class="hl">4 Zeitpunkte (15s, 30s, 45s, 60s)</span> berechnest du Zwischenwerte.<br>
+    <b>Geschwindigkeit:</b> Gib die <span class="hl">absolute Geschwindigkeit</span> ein (z.B. 130 kn, nicht +30).<br>
+    Falsche Antworten zeigen den vollständigen Lösungsweg.
   </div>
-
-  <!-- Scenario Card -->
   <div class="calc-scenario">
     <div class="calc-scenario-label">📋 AUFGABENSTELLUNG — In 60 Sekunden erreichst du:</div>
     <div class="calc-params-grid">
-      <div class="calc-param-box">
-        <div class="calc-param-lbl">Richtung</div>
-        <div class="calc-param-val" id="calc-dir-val">—</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px" id="calc-dir-hint">—</div>
-      </div>
-      <div class="calc-param-box">
-        <div class="calc-param-lbl">Höhe</div>
-        <div class="calc-param-val" id="calc-alt-val">—</div>
-      </div>
-      <div class="calc-param-box">
-        <div class="calc-param-lbl">Start-Speed</div>
-        <div class="calc-param-val neu" id="calc-spd-start">—</div>
-      </div>
-      <div class="calc-param-box">
-        <div class="calc-param-lbl">Ziel-Speed</div>
-        <div class="calc-param-val neu" id="calc-spd-end">—</div>
-      </div>
+      <div class="calc-param-box"><div class="calc-param-lbl">Richtung</div><div class="calc-param-val" id="calc-dir-val">—</div><div style="font-size:10px;color:var(--muted);margin-top:2px" id="calc-dir-hint">—</div></div>
+      <div class="calc-param-box"><div class="calc-param-lbl">Höhe</div><div class="calc-param-val" id="calc-alt-val">—</div></div>
+      <div class="calc-param-box"><div class="calc-param-lbl">Start-Speed</div><div class="calc-param-val neu" id="calc-spd-start">—</div></div>
+      <div class="calc-param-box"><div class="calc-param-lbl">Ziel-Speed</div><div class="calc-param-val neu" id="calc-spd-end">—</div></div>
     </div>
   </div>
-
-  <!-- Checkpoint Table -->
   <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;">ZWISCHENWERTE BERECHNEN</div>
-  <div class="calc-table-wrap">
-    <table class="calc-table">
-      <thead>
-        <tr>
-          <th>Sekunde</th>
-          <th>Grad °</th>
-          <th>Höhe ft</th>
-          <th>Speed kn</th>
-        </tr>
-      </thead>
-      <tbody id="calc-tbody"></tbody>
-    </table>
-  </div>
-
-  <!-- Solutions container -->
+  <div class="calc-table-wrap"><table class="calc-table"><thead><tr><th>Sekunde</th><th>Grad °</th><th>Höhe ft</th><th>Speed kn</th></tr></thead><tbody id="calc-tbody"></tbody></table></div>
   <div id="calc-solutions"></div>
-
-  <!-- Score -->
   <div class="calc-score-row">
-    <div class="calc-score-box">
-      <div class="calc-score-num" id="calc-sc-c" style="color:var(--green)">0</div>
-      <div class="calc-score-lbl">RICHTIG</div>
-    </div>
-    <div class="calc-score-box">
-      <div class="calc-score-num" id="calc-sc-w" style="color:var(--red)">0</div>
-      <div class="calc-score-lbl">FALSCH</div>
-    </div>
-    <div class="calc-score-box">
-      <div class="calc-score-num" id="calc-sc-t" style="color:var(--accent)">0</div>
-      <div class="calc-score-lbl">GESAMT</div>
-    </div>
+    <div class="calc-score-box"><div class="calc-score-num" id="calc-sc-c" style="color:var(--green)">0</div><div class="calc-score-lbl">RICHTIG</div></div>
+    <div class="calc-score-box"><div class="calc-score-num" id="calc-sc-w" style="color:var(--red)">0</div><div class="calc-score-lbl">FALSCH</div></div>
+    <div class="calc-score-box"><div class="calc-score-num" id="calc-sc-t" style="color:var(--accent)">0</div><div class="calc-score-lbl">GESAMT</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px;">
+    <button class="new-task-btn" id="calc-check-btn" style="background:var(--accent)" onclick="calcCheckAnswers()">✔ AUSWERTEN</button>
+    <button class="new-task-btn" style="background:var(--card);border:1px solid var(--border);color:var(--muted);flex:0 0 auto;width:auto;padding:14px 18px;" onclick="calcNewTask()">⟳ NEU</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════ TEST 3: ZIELWERT ══════════════════════════ -->
+<div id="screen-zielwert" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <button class="back-btn" style="margin-bottom:0" onclick="showScreen('screen-home')">◀ Hauptmenü</button>
+    <span class="level-badge-sm" style="color:var(--t3color);border-color:var(--t3color)">TEST 3</span>
   </div>
 
-  <!-- Buttons -->
-  <div style="display:flex;gap:8px;margin-top:10px;">
-    <button class="new-task-btn" id="calc-check-btn" style="background:var(--accent)"
-            onclick="calcCheckAnswers()">✔ AUSWERTEN</button>
-    <button class="new-task-btn" style="background:var(--card);border:1px solid var(--border);color:var(--muted);flex:0 0 auto;width:auto;padding:14px 18px;"
-            onclick="calcNewTask()">⟳ NEU</button>
+  <div class="zw-tip">
+    <strong>💡 Schlüssel-Tipp:</strong> Bei <strong>60 kn</strong> fliegt man in <strong>1 Stunde exakt 60 NM</strong>.<br>
+    → Formel: <strong>Zeit (h) = Distanz (NM) ÷ Geschwindigkeit (kn)</strong><br>
+    → Beispiel: 60 NM ÷ 120 kn = 0,5 h = <strong>30 Minuten</strong>
+  </div>
+
+  <div class="zw-task-card" id="zw-task-card">
+    <div class="zw-task-label" id="zw-task-num">AUFGABE 1 / 10</div>
+    <div class="zw-task-text" id="zw-task-text">Lädt…</div>
+    <div class="zw-answer-wrap">
+      <input type="text" class="zw-answer-input" id="zw-answer" placeholder="?" inputmode="decimal" autocomplete="off">
+      <span class="zw-answer-unit" id="zw-answer-unit">min</span>
+      <button class="zw-check-btn" id="zw-check-btn" onclick="zwCheck()">OK</button>
+    </div>
+    <div class="zw-solution" id="zw-solution"></div>
+  </div>
+
+  <div class="zw-score-row">
+    <div class="zw-score-box"><div class="zw-score-num" id="zw-sc-c" style="color:var(--green)">0</div><div class="zw-score-lbl">RICHTIG</div></div>
+    <div class="zw-score-box"><div class="zw-score-num" id="zw-sc-w" style="color:var(--red)">0</div><div class="zw-score-lbl">FALSCH</div></div>
+    <div class="zw-score-box"><div class="zw-score-num" id="zw-sc-t" style="color:var(--t3color)">0</div><div class="zw-score-lbl">GESAMT</div></div>
+  </div>
+  <div class="zw-btn-row">
+    <button class="new-task-btn" id="zw-next-btn" style="background:var(--t3color);display:none" onclick="zwNext()">▶ NÄCHSTE AUFGABE</button>
+    <button class="new-task-btn" style="background:var(--card);border:1px solid var(--border);color:var(--muted);flex:0 0 auto;width:auto;padding:14px 18px;" onclick="startZielwert()">⟳ NEU STARTEN</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════ TEST 4: CHINESISCHE ZEICHEN ══════════════════════════ -->
+<div id="screen-chinesisch" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <button class="back-btn" style="margin-bottom:0" onclick="czStop();showScreen('screen-home')">◀ Hauptmenü</button>
+    <span class="level-badge-sm" style="color:var(--t4color);border-color:var(--t4color)">TEST 4</span>
+  </div>
+
+  <div class="cz-header">
+    <div>
+      <div class="cz-block-num" id="cz-block-num">Block 1 / 8</div>
+      <div class="round-label" id="cz-q-label">Frage 1 / 6</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="cz-timer-num" id="cz-timer-num">15</div>
+      <div style="font-size:9px;color:var(--muted);letter-spacing:1px;">SEK</div>
+    </div>
+  </div>
+  <div class="cz-timer-wrap">
+    <div class="cz-timer-bar-outer"><div class="cz-timer-bar" id="cz-timer-bar" style="width:100%"></div></div>
+  </div>
+
+  <!-- Symbol mapping -->
+  <div class="cz-map-card">
+    <div class="cz-map-label">SYMBOL → WERT</div>
+    <div class="cz-map-grid" id="cz-map-grid"></div>
+  </div>
+
+  <!-- Question -->
+  <div class="cz-question-card">
+    <div class="cz-question-label">BERECHNE</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;">
+      <div style="text-align:center;"><div class="cz-question-sym" id="cz-q-sym-a"></div><div style="font-size:10px;color:var(--muted)" id="cz-q-val-a"></div></div>
+      <div style="font-size:22px;color:var(--muted)">+</div>
+      <div style="text-align:center;"><div class="cz-question-sym" id="cz-q-sym-b"></div><div style="font-size:10px;color:var(--muted)" id="cz-q-val-b"></div></div>
+      <div style="font-size:22px;color:var(--muted)">=</div>
+      <div>
+        <div class="cz-answer-wrap">
+          <input type="number" class="cz-answer-input" id="cz-answer" inputmode="numeric" placeholder="?">
+          <button class="cz-submit-btn" onclick="czSubmit()">✓</button>
+        </div>
+      </div>
+    </div>
+    <div class="cz-result-badge" id="cz-result-badge"></div>
+  </div>
+
+  <div class="cz-score-row">
+    <div class="cz-score-box"><div class="cz-score-num" id="cz-sc-c" style="color:var(--green)">0</div><div class="cz-score-lbl">RICHTIG</div></div>
+    <div class="cz-score-box"><div class="cz-score-num" id="cz-sc-w" style="color:var(--red)">0</div><div class="cz-score-lbl">FALSCH</div></div>
+    <div class="cz-score-box"><div class="cz-score-num" id="cz-sc-sk" style="color:var(--muted)">0</div><div class="cz-score-lbl">SKIPPED</div></div>
   </div>
 </div>
 
 </div><!-- #app -->
 
 <script>
-// ══════════════════════════════════════════════
-// SCREEN MANAGEMENT
-// ══════════════════════════════════════════════
-function showScreen(name) {
+// ══════════════════════════════
+// UTILS
+// ══════════════════════════════
+function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(name).classList.add('active');
+  document.getElementById(id).classList.add('active');
 }
+function toggle(id, show) { const e = document.getElementById(id); if(e) e.classList.toggle('hidden', !show); }
+function setText(id, v)   { const e = document.getElementById(id); if(e) e.textContent = v; }
 
-function toggle(id, show) {
-  const el = document.getElementById(id);
-  if (el) el.classList.toggle('hidden', !show);
-}
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-// ══════════════════════════════════════════════
-// ── MEMORY MODE ──
-// ══════════════════════════════════════════════
+// ══════════════════════════════
+// TEST 1: MEMORY
+// ══════════════════════════════
 const MEM_TOTAL = 5;
 const CLIMB_VALUES = [];
-for (let v = -30; v <= 30; v++) { if (v !== 0) CLIMB_VALUES.push(v / 10); }
-const ATT_DEGS = [0,5,10,15,20,25,30,35,40,45,60,75,90];
-const ATT_DIRS = ['Links','Rechts'];
+for(let v=-30;v<=30;v++){if(v!==0)CLIMB_VALUES.push(v/10);}
+const ATT_DEGS=[0,5,10,15,20,25,30,35,40,45,60,75,90];
+const ATT_DIRS=['Links','Rechts'];
+let memLevel='easy',memRound=0,memCorrect=0,memParams=3,memHistory=[],memTimer=null;
+let tCompass,tSpeed,tAttDeg,tAttDir,tAlt,tClimb;
 
-let memLevel = 'easy', memRound = 0, memCorrect = 0, memParams = 3;
-let memHistory = [], memTimer = null;
-let tCompass, tSpeed, tAttDeg, tAttDir, tAlt, tClimb;
-
-function selectMemoryLevel(lv) {
-  memLevel = lv; memRound = 0; memCorrect = 0; memHistory = [];
-  memParams = lv === 'easy' ? 3 : lv === 'medium' ? 4 : 5;
-  memStartRound();
+function selectMemoryLevel(lv){memLevel=lv;memRound=0;memCorrect=0;memHistory=[];memParams=lv==='easy'?3:lv==='medium'?4:5;memStartRound();}
+function memStartRound(){memRound++;memGenValues();memApplyLevelUI();memShowDisplay();}
+function memGenValues(){
+  tCompass=Math.floor(Math.random()*366);tSpeed=Math.floor(Math.random()*301);
+  const deg=ATT_DEGS[Math.floor(Math.random()*ATT_DEGS.length)];tAttDeg=deg;
+  tAttDir=deg===0?'Gerade':ATT_DIRS[Math.floor(Math.random()*2)];
+  tAlt=Math.floor(Math.random()*31)*500;
+  tClimb=CLIMB_VALUES[Math.floor(Math.random()*CLIMB_VALUES.length)];
 }
-
-function memStartRound() {
-  memRound++;
-  memGenValues();
-  memApplyLevelUI();
-  memShowDisplay();
+function memApplyLevelUI(){
+  const isMed=memLevel==='medium'||memLevel==='hard',isHard=memLevel==='hard';
+  toggle('d-alt-card',isMed);toggle('d-climb-card',isHard);toggle('card-alt',isMed);toggle('card-climb',isHard);
+  const colors={easy:'var(--easy)',medium:'var(--medium)',hard:'var(--hard)'};
+  const names={easy:'EASY',medium:'MEDIUM',hard:'HARD'};
+  const b=document.getElementById('i-badge');b.textContent=names[memLevel];b.style.color=b.style.borderColor=colors[memLevel];
 }
-
-function memGenValues() {
-  tCompass = Math.floor(Math.random() * 366);
-  tSpeed   = Math.floor(Math.random() * 301);
-  const deg = ATT_DEGS[Math.floor(Math.random() * ATT_DEGS.length)];
-  tAttDeg  = deg;
-  tAttDir  = deg === 0 ? 'Gerade' : ATT_DIRS[Math.floor(Math.random() * 2)];
-  tAlt     = Math.floor(Math.random() * 31) * 500;
-  tClimb   = CLIMB_VALUES[Math.floor(Math.random() * CLIMB_VALUES.length)];
-}
-
-function memApplyLevelUI() {
-  const isMed  = memLevel === 'medium' || memLevel === 'hard';
-  const isHard = memLevel === 'hard';
-  toggle('d-alt-card',   isMed);  toggle('d-climb-card', isHard);
-  toggle('card-alt',     isMed);  toggle('card-climb',   isHard);
-  const colors = { easy:'var(--easy)', medium:'var(--medium)', hard:'var(--hard)' };
-  const names  = { easy:'EASY', medium:'MEDIUM', hard:'HARD' };
-  const badge  = document.getElementById('i-badge');
-  badge.textContent = names[memLevel];
-  badge.style.color = badge.style.borderColor = colors[memLevel];
-}
-
-function memShowDisplay() {
-  setText('d-round', `Runde ${memRound} / ${MEM_TOTAL}`);
-  setText('d-compass', tCompass);
-  setText('d-speed', tSpeed);
-  setText('d-att-deg', tAttDeg === 0 ? '0' : tAttDeg);
-  setText('d-alt', tAlt);
-  const dirEl = document.getElementById('d-att-dir');
-  if (tAttDeg === 0) { dirEl.textContent = 'Geradeaus'; dirEl.style.color = '#787d91'; }
-  else { dirEl.textContent = tAttDir === 'Links' ? '◀ Linkskurve' : 'Rechtskurve ▶'; dirEl.style.color = tAttDir === 'Links' ? '#3c78dc' : '#d28228'; }
-  setText('d-climb', (tClimb > 0 ? '+' : '') + tClimb.toFixed(1));
-
-  const numEl = document.getElementById('d-countdown');
-  const phEl  = document.getElementById('d-phase');
-  numEl.textContent = '6'; numEl.className = 'countdown-num';
-  phEl.textContent  = 'MEMORIZE'; phEl.className = 'countdown-text';
+function memShowDisplay(){
+  setText('d-round',`Runde ${memRound} / ${MEM_TOTAL}`);setText('d-compass',tCompass);setText('d-speed',tSpeed);
+  setText('d-att-deg',tAttDeg===0?'0':tAttDeg);setText('d-alt',tAlt);
+  const d=document.getElementById('d-att-dir');
+  if(tAttDeg===0){d.textContent='Geradeaus';d.style.color='#787d91';}
+  else{d.textContent=tAttDir==='Links'?'◀ Linkskurve':'Rechtskurve ▶';d.style.color=tAttDir==='Links'?'#3c78dc':'#d28228';}
+  setText('d-climb',(tClimb>0?'+':'')+tClimb.toFixed(1));
+  const n=document.getElementById('d-countdown'),p=document.getElementById('d-phase');
+  n.textContent='6';n.className='countdown-num';p.textContent='MEMORIZE';p.className='countdown-text';
   showScreen('screen-display');
-
-  if (memTimer) clearInterval(memTimer);
-  let secs = 6;
-  memTimer = setInterval(() => {
-    secs--;
-    numEl.textContent = secs;
-    if (secs <= 2) { numEl.className = 'countdown-num urgent'; phEl.className = 'countdown-text urgent'; }
-    if (secs <= 0) { clearInterval(memTimer); memShowInput(); }
-  }, 1000);
+  if(memTimer)clearInterval(memTimer);let secs=6;
+  memTimer=setInterval(()=>{secs--;n.textContent=secs;
+    if(secs<=2){n.className='countdown-num urgent';p.className='countdown-text urgent';}
+    if(secs<=0){clearInterval(memTimer);memShowInput();}},1000);
 }
-
-function memShowInput() {
-  setText('i-round', `Runde ${memRound} / ${MEM_TOTAL}`);
-  ['in-compass','in-speed','in-att-deg','in-alt','in-climb'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  document.getElementById('in-att-dir').value = 'Gerade';
-  ['card-compass','card-speed','card-att','card-alt','card-climb'].forEach(id => {
-    const c = document.getElementById(id); if (c) c.classList.remove('correct','wrong');
-  });
-  ['cv-compass','cv-speed','cv-att','cv-alt','cv-climb'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.classList.remove('visible','wrong-shown'); el.textContent = ''; }
-  });
-  document.getElementById('submit-btn').disabled = false;
-  showScreen('screen-input');
-  setTimeout(() => document.getElementById('in-compass').focus(), 300);
+function memShowInput(){
+  setText('i-round',`Runde ${memRound} / ${MEM_TOTAL}`);
+  ['in-compass','in-speed','in-att-deg','in-alt','in-climb'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('in-att-dir').value='Gerade';
+  ['card-compass','card-speed','card-att','card-alt','card-climb'].forEach(id=>{const c=document.getElementById(id);if(c)c.classList.remove('correct','wrong');});
+  ['cv-compass','cv-speed','cv-att','cv-alt','cv-climb'].forEach(id=>{const e=document.getElementById(id);if(e){e.classList.remove('visible','wrong-shown');e.textContent='';}});
+  document.getElementById('submit-btn').disabled=false;
+  showScreen('screen-input');setTimeout(()=>document.getElementById('in-compass').focus(),300);
 }
-
-function memoryCheckAnswers() {
-  const cmpOk = parseInt(document.getElementById('in-compass').value) === tCompass;
-  memMarkCard('card-compass','cv-compass', cmpOk, tCompass + '°');
-  const spdOk = parseInt(document.getElementById('in-speed').value) === tSpeed;
-  memMarkCard('card-speed','cv-speed', spdOk, tSpeed + ' kn');
-  const entDeg = parseInt(document.getElementById('in-att-deg').value);
-  const entDir = document.getElementById('in-att-dir').value.replace('◀ ','').replace(' ▶','').trim();
-  const attOk  = tAttDeg === 0 ? (entDeg === 0 && entDir === 'Gerade') : (entDeg === tAttDeg && entDir === tAttDir);
-  const attLbl = tAttDeg === 0 ? '0° Gerade' : `${tAttDeg}° ${tAttDir}`;
-  memMarkCard('card-att','cv-att', attOk, attLbl);
-  let rScore = (cmpOk?1:0) + (spdOk?1:0) + (attOk?1:0);
-  if (memLevel === 'medium' || memLevel === 'hard') {
-    const altOk = parseInt(document.getElementById('in-alt').value) === tAlt;
-    memMarkCard('card-alt','cv-alt', altOk, tAlt + ' ft'); rScore += altOk?1:0;
-  }
-  if (memLevel === 'hard') {
-    const raw = document.getElementById('in-climb').value.trim().replace(',','.');
-    const clOk = Math.abs(parseFloat(raw) - tClimb) < 0.05;
-    memMarkCard('card-climb','cv-climb', clOk, (tClimb>0?'+':'') + tClimb.toFixed(1)); rScore += clOk?1:0;
-  }
-  memCorrect += rScore;
-  memHistory.push({ round: memRound, score: rScore, max: memParams });
-  document.getElementById('submit-btn').disabled = true;
-  setTimeout(() => { if (memRound < MEM_TOTAL) memStartRound(); else memShowScore(); }, 2500);
+function memoryCheckAnswers(){
+  const cmpOk=parseInt(document.getElementById('in-compass').value)===tCompass;memMarkCard('card-compass','cv-compass',cmpOk,tCompass+'°');
+  const spdOk=parseInt(document.getElementById('in-speed').value)===tSpeed;memMarkCard('card-speed','cv-speed',spdOk,tSpeed+' kn');
+  const eD=parseInt(document.getElementById('in-att-deg').value),eDir=document.getElementById('in-att-dir').value.replace('◀ ','').replace(' ▶','').trim();
+  const attOk=tAttDeg===0?(eD===0&&eDir==='Gerade'):(eD===tAttDeg&&eDir===tAttDir);
+  memMarkCard('card-att','cv-att',attOk,tAttDeg===0?'0° Gerade':`${tAttDeg}° ${tAttDir}`);
+  let rs=(cmpOk?1:0)+(spdOk?1:0)+(attOk?1:0);
+  if(memLevel==='medium'||memLevel==='hard'){const altOk=parseInt(document.getElementById('in-alt').value)===tAlt;memMarkCard('card-alt','cv-alt',altOk,tAlt+' ft');rs+=altOk?1:0;}
+  if(memLevel==='hard'){const raw=document.getElementById('in-climb').value.trim().replace(',','.');const clOk=Math.abs(parseFloat(raw)-tClimb)<0.05;memMarkCard('card-climb','cv-climb',clOk,(tClimb>0?'+':'')+tClimb.toFixed(1));rs+=clOk?1:0;}
+  memCorrect+=rs;memHistory.push({round:memRound,score:rs,max:memParams});
+  document.getElementById('submit-btn').disabled=true;
+  setTimeout(()=>{if(memRound<MEM_TOTAL)memStartRound();else memShowScore();},2500);
 }
-
-function memMarkCard(cardId, cvId, ok, val) {
-  const card = document.getElementById(cardId), cv = document.getElementById(cvId);
-  if (!card || !cv) return;
-  card.classList.remove('correct','wrong'); card.classList.add(ok ? 'correct' : 'wrong');
-  cv.textContent = (ok ? '✓ ' : '✗ ') + val;
-  cv.classList.toggle('wrong-shown', !ok); cv.classList.add('visible');
+function memMarkCard(cId,cvId,ok,val){
+  const c=document.getElementById(cId),cv=document.getElementById(cvId);if(!c||!cv)return;
+  c.classList.remove('correct','wrong');c.classList.add(ok?'correct':'wrong');
+  cv.textContent=(ok?'✓ ':'✗ ')+val;cv.classList.toggle('wrong-shown',!ok);cv.classList.add('visible');
 }
-
-function memShowScore() {
-  const total = MEM_TOTAL * memParams;
-  const pct   = Math.round(memCorrect / total * 100);
-  setText('s-score', `${memCorrect} / ${total}`);
-  setText('s-percent', `${pct}%`);
-  const colors = { easy:'var(--easy)', medium:'var(--medium)', hard:'var(--hard)' };
-  const names  = { easy:'EASY', medium:'MEDIUM', hard:'HARD' };
-  const badge  = document.getElementById('s-badge');
-  badge.textContent = names[memLevel]; badge.style.color = badge.style.borderColor = colors[memLevel];
-  document.getElementById('s-percent').style.color = pct>=80?'var(--green)':pct>=50?'var(--yellow)':'var(--red)';
-  const hist = document.getElementById('s-history');
-  hist.innerHTML = '<div class="history-title">RUNDENÜBERSICHT</div>';
-  memHistory.forEach(r => {
-    const p = Math.round(r.score/r.max*100);
-    const c = p>=80?'var(--green)':p>=50?'var(--yellow)':'var(--red)';
-    const row = document.createElement('div'); row.className = 'history-row';
-    row.innerHTML = `<span class="history-round">Runde ${r.round}</span><span class="history-score" style="color:${c}">${r.score} / ${r.max} (${p}%)</span>`;
-    hist.appendChild(row);
-  });
+function memShowScore(){
+  const total=MEM_TOTAL*memParams,pct=Math.round(memCorrect/total*100);
+  setText('s-score',`${memCorrect} / ${total}`);setText('s-percent',`${pct}%`);
+  const cols={easy:'var(--easy)',medium:'var(--medium)',hard:'var(--hard)'};
+  const names={easy:'EASY',medium:'MEDIUM',hard:'HARD'};
+  const b=document.getElementById('s-badge');b.textContent=names[memLevel];b.style.color=b.style.borderColor=cols[memLevel];
+  document.getElementById('s-percent').style.color=pct>=80?'var(--green)':pct>=50?'var(--yellow)':'var(--red)';
+  const hist=document.getElementById('s-history');hist.innerHTML='<div class="history-title">RUNDENÜBERSICHT</div>';
+  memHistory.forEach(r=>{const p=Math.round(r.score/r.max*100);const co=p>=80?'var(--green)':p>=50?'var(--yellow)':'var(--red)';const row=document.createElement('div');row.className='history-row';row.innerHTML=`<span class="history-round">Runde ${r.round}</span><span class="history-score" style="color:${co}">${r.score} / ${r.max} (${p}%)</span>`;hist.appendChild(row);});
   showScreen('screen-score');
 }
+function memoryPlayAgain(){memRound=0;memCorrect=0;memHistory=[];memStartRound();}
 
-function memoryPlayAgain() {
-  memRound = 0; memCorrect = 0; memHistory = [];
-  memStartRound();
+// ══════════════════════════════
+// TEST 2: KURSRECHNER
+// ══════════════════════════════
+const CALC_TIMES=[15,30,45,60],CALC_FRACS=['¼','½','¾','4/4'];
+let calcMode='easy',calcScenario=null,calcSubmitted=false,calcScore={c:0,w:0,t:0},calcTimerInterval=null,calcTimeLeft=60;
+
+function startCalcMode(mode){
+  calcMode=mode;calcScore={c:0,w:0,t:0};updateCalcScoreUI();
+  const b=document.getElementById('calc-mode-badge');
+  if(mode==='easy'){b.textContent='LEICHT';b.style.color=b.style.borderColor='var(--green)';}
+  else{b.textContent='SCHWER';b.style.color=b.style.borderColor='var(--red)';}
+  toggle('calc-timer-wrap',mode==='hard');showScreen('screen-calc');calcNewTask();
+}
+function calcNewTask(){
+  calcSubmitted=false;if(calcTimerInterval){clearInterval(calcTimerInterval);calcTimerInterval=null;}
+  const dirs=[360,-360,180,-180,270,-270,90,-90],alts=[500,1000,1500,2000,-500,-1000,-1500,250,-250];
+  const dir=dirs[Math.floor(Math.random()*dirs.length)],alt=alts[Math.floor(Math.random()*alts.length)];
+  const startSpd=(Math.floor(Math.random()*13)+6)*10;
+  const deltas=[20,30,40,50,-20,-30,10,-10];
+  const spdDelta=deltas[Math.floor(Math.random()*deltas.length)];
+  calcScenario={dir,alt,spdDelta,startSpd,endSpd:startSpd+spdDelta};
+  const dv=document.getElementById('calc-dir-val');dv.textContent=(dir>0?'+':'')+dir+'°';dv.className='calc-param-val '+(dir>0?'pos':'neg');
+  document.getElementById('calc-dir-hint').textContent=dir>0?'→ Rechts':'← Links';
+  const av=document.getElementById('calc-alt-val');av.textContent=(alt>0?'+':'')+alt+' ft';av.className='calc-param-val '+(alt>0?'pos':'neg');
+  document.getElementById('calc-spd-start').textContent=startSpd+' kn';document.getElementById('calc-spd-end').textContent=calcScenario.endSpd+' kn';
+  const tbody=document.getElementById('calc-tbody');tbody.innerHTML='';
+  CALC_TIMES.forEach((t,i)=>{const row=document.createElement('tr');row.innerHTML=`<td><span class="calc-time-label">${t}s</span><span class="calc-frac">${CALC_FRACS[i]}</span></td><td><input type="number" class="calc-input" id="ci-deg-${i}" placeholder="?"></td><td><input type="number" class="calc-input" id="ci-ft-${i}" placeholder="?"></td><td><input type="number" class="calc-input" id="ci-kn-${i}" placeholder="?"></td>`;tbody.appendChild(row);});
+  document.getElementById('calc-solutions').innerHTML='';
+  const btn=document.getElementById('calc-check-btn');btn.disabled=false;btn.style.opacity='1';
+  document.querySelectorAll('.calc-input').forEach(e=>{e.disabled=false;e.className='calc-input';});
+  const inputs=Array.from(document.querySelectorAll('.calc-input'));
+  inputs.forEach((el,idx)=>{el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(idx+1<inputs.length)inputs[idx+1].focus();else calcCheckAnswers();}});});
+  if(calcMode==='hard')calcStartTimer();
+  else{setText('calc-timer-num','60');const bar=document.getElementById('calc-timer-bar');if(bar){bar.style.width='100%';bar.className='calc-timer-bar';}}
+  const first=document.getElementById('ci-deg-0');if(first)setTimeout(()=>first.focus(),200);
+}
+function calcStartTimer(){
+  calcTimeLeft=60;const n=document.getElementById('calc-timer-num'),b=document.getElementById('calc-timer-bar');
+  calcTimerInterval=setInterval(()=>{calcTimeLeft--;
+    if(n){n.textContent=calcTimeLeft;n.className='calc-timer-num'+(calcTimeLeft<=10?' urgent':'');}
+    if(b){b.style.width=(calcTimeLeft/60*100)+'%';b.className='calc-timer-bar'+(calcTimeLeft<=10?' urgent':'');}
+    if(calcTimeLeft<=0){clearInterval(calcTimerInterval);if(!calcSubmitted)calcCheckAnswers();}},1000);
+}
+function calcCheckAnswers(){
+  if(calcSubmitted)return;calcSubmitted=true;
+  if(calcTimerInterval){clearInterval(calcTimerInterval);calcTimerInterval=null;}
+  const sc=calcScenario;let correct=0,wrong=0;const sol=document.getElementById('calc-solutions');sol.innerHTML='';
+  CALC_TIMES.forEach((t,i)=>{
+    const frac=t/60,ansDeg=Math.round(sc.dir*frac),ansFt=Math.round(sc.alt*frac),ansKn=Math.round(sc.startSpd+sc.spdDelta*frac);
+    const di=document.getElementById(`ci-deg-${i}`),fi=document.getElementById(`ci-ft-${i}`),ki=document.getElementById(`ci-kn-${i}`);
+    const dv=parseFloat(di?.value),fv=parseFloat(fi?.value),kv=parseFloat(ki?.value);
+    const dOk=!isNaN(dv)&&Math.abs(dv-ansDeg)<=Math.max(5,Math.abs(ansDeg)*0.05);
+    const fOk=!isNaN(fv)&&Math.abs(fv-ansFt)<=Math.max(25,Math.abs(ansFt)*0.05);
+    const kOk=!isNaN(kv)&&Math.abs(kv-ansKn)<=5;
+    [di,fi,ki].forEach((inp,j)=>{if(!inp)return;inp.className='calc-input '+([dOk,fOk,kOk][j]?'correct':'wrong');inp.disabled=true;});
+    if(dOk&&fOk&&kOk)correct++;else wrong++;
+    if(!dOk||!fOk||!kOk){
+      const fn=(i+1)/4;let html=`<div class="calc-solution"><strong>✘ LÖSUNG – ${t}s (${CALC_FRACS[i]})</strong>`;
+      if(!dOk)html+=`Grad: <span style="color:var(--red)">${isNaN(dv)?'–':dv+'°'}</span> → <span style="color:var(--green)">${ansDeg}°</span><br><span class="calc-solution-step">${sc.dir}° × ${fn} = ${ansDeg}°</span><br>`;
+      if(!fOk)html+=`Höhe: <span style="color:var(--red)">${isNaN(fv)?'–':fv+' ft'}</span> → <span style="color:var(--green)">${ansFt} ft</span><br><span class="calc-solution-step">${sc.alt} ft × ${fn} = ${ansFt} ft</span><br>`;
+      if(!kOk)html+=`Speed: <span style="color:var(--red)">${isNaN(kv)?'–':kv+' kn'}</span> → <span style="color:var(--green)">${ansKn} kn</span><br><span class="calc-solution-step">${sc.startSpd} + (${sc.spdDelta} × ${fn}) = ${ansKn} kn</span>`;
+      html+='</div>';sol.insertAdjacentHTML('beforeend',html);}
+  });
+  calcScore.c+=correct;calcScore.w+=wrong;calcScore.t+=4;updateCalcScoreUI();
+  const btn=document.getElementById('calc-check-btn');btn.disabled=true;btn.style.opacity='0.4';
+}
+function updateCalcScoreUI(){setText('calc-sc-c',calcScore.c);setText('calc-sc-w',calcScore.w);setText('calc-sc-t',calcScore.t);}
+function toggleCalcHelp(){const b=document.getElementById('calc-help-body'),a=document.getElementById('calc-help-arrow');const o=b.classList.toggle('open');a.textContent=o?'▼':'▶';}
+
+// ══════════════════════════════
+// TEST 3: ZIELWERTBERECHNUNG
+// ══════════════════════════════
+let zwTaskList=[], zwIdx=0, zwScore={c:0,w:0,t:0}, zwAnswered=false;
+
+function generateZwTasks(){
+  const tasks=[];
+  // Types: 'time_minutes' (how long), 'arrival' (clock time), 'distance' (how far), 'speed' (how fast)
+  const templates=[
+    // Zeit in Minuten
+    (s,d)=>({type:'time_minutes', text:`Sie fliegen mit <span class="highlight">${s} kn</span>. Wie lange dauert es, um <span class="highlight">${d} NM</span> zurückzulegen?`, answer: d/s*60, unit:'min', solution:`Zeit = Distanz ÷ Geschwindigkeit<br><span class="step">${d} NM ÷ ${s} kn = ${roundDec(d/s)} h = ${roundDec(d/s*60)} min</span>`}),
+    // Ankunftszeit
+    (s,d,startH,startM)=>({type:'arrival', text:`Sie starten um <span class="highlight">${pad(startH)}:${pad(startM)} Uhr</span> mit <span class="highlight">${s} kn</span>. Ihr Ziel ist <span class="highlight">${d} NM</span> entfernt. Um welche Uhrzeit erreichen Sie es?`, answer: toMinutes(startH,startM)+d/s*60, unit:'Uhr (HH:MM)', solution:`Flugzeit = ${d} NM ÷ ${s} kn = ${roundDec(d/s*60)} min<br><span class="step">Abflug ${pad(startH)}:${pad(startM)} + ${roundDec(d/s*60)} min = ${minToTime(toMinutes(startH,startM)+d/s*60)}</span>`, displayAnswer: minToTime(toMinutes(startH,startM)+d/s*60)}),
+    // Distanz
+    (s,t)=>({type:'distance', text:`Sie fliegen <span class="highlight">${t} Minuten</span> lang mit <span class="highlight">${s} kn</span>. Welche Distanz legen Sie zurück?`, answer: s*t/60, unit:'NM', solution:`Distanz = Geschwindigkeit × Zeit<br><span class="step">${s} kn × ${roundDec(t/60)} h = ${roundDec(s*t/60)} NM</span>`}),
+    // Geschwindigkeit
+    (d,t)=>({type:'speed', text:`Sie legen <span class="highlight">${d} NM</span> in <span class="highlight">${t} Minuten</span> zurück. Wie schnell fliegen Sie?`, answer: d/(t/60), unit:'kn', solution:`Geschwindigkeit = Distanz ÷ Zeit<br><span class="step">${d} NM ÷ ${roundDec(t/60)} h = ${roundDec(d/(t/60))} kn</span>`}),
+  ];
+  const speeds=[60,80,90,100,120,150,180,200,240];
+  const dists=[30,40,45,50,60,75,80,90,100,120,150,180,200];
+  const times=[15,20,25,30,40,45,50,60,75,90];
+  for(let i=0;i<12;i++){
+    const s=speeds[Math.floor(Math.random()*speeds.length)];
+    const d=dists[Math.floor(Math.random()*dists.length)];
+    const t=times[Math.floor(Math.random()*times.length)];
+    const startH=Math.floor(Math.random()*12)+7; // 07–18
+    const startM=[0,15,30,45][Math.floor(Math.random()*4)];
+    const type=i%4;
+    if(type===0) tasks.push(templates[0](s,d));
+    else if(type===1) tasks.push(templates[1](s,d,startH,startM));
+    else if(type===2) tasks.push(templates[2](s,t));
+    else tasks.push(templates[3](d,t));
+  }
+  return tasks;
 }
 
-// ══════════════════════════════════════════════
-// ── CALC MODE ──
-// ══════════════════════════════════════════════
-const CALC_TIMES = [15, 30, 45, 60];
-const CALC_FRACS = ['¼', '½', '¾', '4/4'];
+function roundDec(n,places=2){return Math.round(n*Math.pow(10,places))/Math.pow(10,places);}
+function pad(n){return String(n).padStart(2,'0');}
+function toMinutes(h,m){return h*60+m;}
+function minToTime(totalMin){const h=Math.floor(totalMin/60)%24;const m=Math.round(totalMin%60);return pad(h)+':'+pad(m);}
 
-let calcMode = 'easy';
-let calcScenario = null;
-let calcSubmitted = false;
-let calcScore = { c: 0, w: 0, t: 0 };
-let calcTimerInterval = null;
-let calcTimeLeft = 60;
+function startZielwert(){
+  zwTaskList=generateZwTasks();zwIdx=0;zwScore={c:0,w:0,t:0};
+  updateZwScore();showScreen('screen-zielwert');zwLoadTask();
+}
 
-function startCalcMode(mode) {
-  calcMode = mode;
-  calcScore = { c: 0, w: 0, t: 0 };
-  updateCalcScoreUI();
-  const badge = document.getElementById('calc-mode-badge');
-  if (mode === 'easy') {
-    badge.textContent = 'LEICHT'; badge.style.color = badge.style.borderColor = 'var(--green)';
+function zwLoadTask(){
+  zwAnswered=false;
+  const task=zwTaskList[zwIdx];
+  setText('zw-task-num',`AUFGABE ${zwIdx+1} / ${zwTaskList.length}`);
+  document.getElementById('zw-task-text').innerHTML=task.text;
+  const inp=document.getElementById('zw-answer');inp.value='';inp.className='zw-answer-input';inp.disabled=false;
+  document.getElementById('zw-answer-unit').textContent=task.unit==='Uhr (HH:MM)'?'Uhr (HH:MM)':task.unit;
+  inp.placeholder=task.unit==='Uhr (HH:MM)'?'HH:MM':'?';
+  inp.type=task.unit==='Uhr (HH:MM)'?'text':'number';
+  const sol=document.getElementById('zw-solution');sol.innerHTML='';sol.classList.remove('show');
+  const btn=document.getElementById('zw-check-btn');btn.disabled=false;
+  const nxt=document.getElementById('zw-next-btn');nxt.style.display='none';
+  setTimeout(()=>inp.focus(),200);
+}
+
+function zwCheck(){
+  if(zwAnswered)return;zwAnswered=true;
+  const task=zwTaskList[zwIdx];
+  const inp=document.getElementById('zw-answer');
+  const sol=document.getElementById('zw-solution');
+  const btn=document.getElementById('zw-check-btn');
+  btn.disabled=true;inp.disabled=true;
+  let correct=false;
+  if(task.unit==='Uhr (HH:MM)'){
+    const entered=inp.value.trim();const expected=task.displayAnswer;
+    // Allow ±1 min tolerance
+    const toM=s=>{const parts=s.split(':');return parseInt(parts[0]||0)*60+parseInt(parts[1]||0);};
+    correct=Math.abs(toM(entered)-toM(expected))<=1;
+    if(correct)inp.classList.add('correct');else inp.classList.add('wrong');
+    if(!correct){sol.innerHTML=`<strong>✘ Richtige Antwort: ${expected} Uhr</strong>${task.solution}`;sol.classList.add('show');}
+    else{sol.innerHTML=`<strong style="color:var(--green)">✓ Richtig! ${expected} Uhr</strong>`;sol.classList.add('show');}
   } else {
-    badge.textContent = 'SCHWER'; badge.style.color = badge.style.borderColor = 'var(--red)';
+    const entered=parseFloat(inp.value.replace(',','.'));
+    correct=!isNaN(entered)&&Math.abs(entered-task.answer)<=task.answer*0.02+0.5;
+    const displayAns=roundDec(task.answer);
+    if(correct)inp.classList.add('correct');else inp.classList.add('wrong');
+    if(!correct){sol.innerHTML=`<strong>✘ Richtige Antwort: ${displayAns} ${task.unit}</strong>${task.solution}`;sol.classList.add('show');}
+    else{sol.innerHTML=`<strong style="color:var(--green)">✓ Richtig! ${displayAns} ${task.unit}</strong>`;sol.classList.add('show');}
   }
-  toggle('calc-timer-wrap', mode === 'hard');
-  showScreen('screen-calc');
-  calcNewTask();
+  if(correct)zwScore.c++;else zwScore.w++;zwScore.t++;updateZwScore();
+  const nxt=document.getElementById('zw-next-btn');
+  nxt.style.display=zwIdx+1<zwTaskList.length?'block':'none';
+  nxt.textContent=zwIdx+1<zwTaskList.length?'▶ NÄCHSTE AUFGABE':'✓ FERTIG';
 }
 
-function calcNewTask() {
-  calcSubmitted = false;
-  if (calcTimerInterval) { clearInterval(calcTimerInterval); calcTimerInterval = null; }
+function zwNext(){zwIdx++;if(zwIdx<zwTaskList.length)zwLoadTask();}
 
-  // Generate scenario
-  const dirs  = [360,-360,180,-180,270,-270,90,-90];
-  const alts  = [500,1000,1500,2000,-500,-1000,-1500,250,-250];
-  const dir   = dirs[Math.floor(Math.random() * dirs.length)];
-  const alt   = alts[Math.floor(Math.random() * alts.length)];
-  const startSpd = (Math.floor(Math.random() * 13) + 6) * 10; // 60-180 in 10er
-  const deltas   = [20,30,40,50,-20,-30,10,-10];
-  const spdDelta = deltas[Math.floor(Math.random() * deltas.length)];
-  const endSpd   = startSpd + spdDelta;
-  calcScenario   = { dir, alt, spdDelta, startSpd, endSpd };
-
-  // Update scenario display
-  const dirEl = document.getElementById('calc-dir-val');
-  dirEl.textContent = (dir>0?'+':'') + dir + '°';
-  dirEl.className = 'calc-param-val ' + (dir>0?'pos':'neg');
-  document.getElementById('calc-dir-hint').textContent = dir>0 ? '→ Rechts' : '← Links';
-
-  const altEl = document.getElementById('calc-alt-val');
-  altEl.textContent = (alt>0?'+':'') + alt + ' ft';
-  altEl.className = 'calc-param-val ' + (alt>0?'pos':'neg');
-
-  document.getElementById('calc-spd-start').textContent = startSpd + ' kn';
-  document.getElementById('calc-spd-end').textContent   = endSpd + ' kn';
-
-  // Build table
-  const tbody = document.getElementById('calc-tbody');
-  tbody.innerHTML = '';
-  CALC_TIMES.forEach((t, i) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>
-        <span class="calc-time-label">${t}s</span>
-        <span class="calc-frac">${CALC_FRACS[i]}</span>
-      </td>
-      <td><input type="number" class="calc-input" id="ci-deg-${i}" placeholder="?"></td>
-      <td><input type="number" class="calc-input" id="ci-ft-${i}"  placeholder="?"></td>
-      <td><input type="number" class="calc-input" id="ci-kn-${i}"  placeholder="?"></td>
-    `;
-    tbody.appendChild(row);
-  });
-
-  // Clear solutions
-  document.getElementById('calc-solutions').innerHTML = '';
-
-  // Re-enable check btn
-  const btn = document.getElementById('calc-check-btn');
-  btn.disabled = false; btn.style.opacity = '1';
-
-  // Enable all inputs
-  document.querySelectorAll('.calc-input').forEach(el => { el.disabled = false; el.className = 'calc-input'; });
-
-  // Enter key nav
-  const inputs = Array.from(document.querySelectorAll('.calc-input'));
-  inputs.forEach((el, idx) => {
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (idx + 1 < inputs.length) inputs[idx + 1].focus();
-        else calcCheckAnswers();
-      }
-    });
-  });
-
-  if (calcMode === 'hard') calcStartTimer();
-  else {
-    setText('calc-timer-num', '60');
-    const bar = document.getElementById('calc-timer-bar');
-    if (bar) { bar.style.width = '100%'; bar.className = 'calc-timer-bar'; }
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('screen-zielwert').classList.contains('active')){
+    if(e.key==='Enter'&&!zwAnswered)zwCheck();
   }
+});
 
-  // Focus first
-  const first = document.getElementById('ci-deg-0');
-  if (first) setTimeout(() => first.focus(), 200);
+function updateZwScore(){setText('zw-sc-c',zwScore.c);setText('zw-sc-w',zwScore.w);setText('zw-sc-t',zwScore.t);}
+
+// ══════════════════════════════
+// TEST 4: ZEICHEN-ADDITIONS-TEST
+// ══════════════════════════════
+// Symbols: use emoji-style symbols that look "foreign" / pictographic
+const CZ_SYMBOLS = ['🌙','⭐','🔺','🔷','⚡','🌊','🌸','🎯','🔑','🌿','💎','🎲'];
+
+let czMapping={}, czChain=[], czBlockIdx=0, czQIdx=0, czTimer=null, czScore={c:0,w:0,sk:0};
+const CZ_BLOCKS=8, CZ_CHAIN_LEN=8, CZ_Q_PER_BLOCK=6, CZ_SECS=15;
+
+function startChinesisch(){
+  czScore={c:0,w:0,sk:0};czBlockIdx=0;
+  showScreen('screen-chinesisch');updateCzScore();czNewBlock();
 }
 
-function calcStartTimer() {
-  calcTimeLeft = 60;
-  const numEl = document.getElementById('calc-timer-num');
-  const barEl = document.getElementById('calc-timer-bar');
-  calcTimerInterval = setInterval(() => {
-    calcTimeLeft--;
-    if (numEl) { numEl.textContent = calcTimeLeft; numEl.className = 'calc-timer-num' + (calcTimeLeft <= 10 ? ' urgent' : ''); }
-    if (barEl) { barEl.style.width = (calcTimeLeft / 60 * 100) + '%'; barEl.className = 'calc-timer-bar' + (calcTimeLeft <= 10 ? ' urgent' : ''); }
-    if (calcTimeLeft <= 0) { clearInterval(calcTimerInterval); if (!calcSubmitted) calcCheckAnswers(); }
-  }, 1000);
+function czStop(){if(czTimer){clearInterval(czTimer);czTimer=null;}}
+
+function czNewBlock(){
+  if(czBlockIdx>=CZ_BLOCKS){czStop();return;}
+  czBlockIdx++;
+  // Generate mapping: pick 8 symbols, assign values 0-9
+  const syms=shuffle([...CZ_SYMBOLS]).slice(0,8);
+  czMapping={};
+  syms.forEach((s,i)=>czMapping[s]=i+1); // values 1-8
+  // Generate chain of length CZ_CHAIN_LEN from those symbols
+  czChain=[];for(let i=0;i<CZ_CHAIN_LEN;i++)czChain.push(syms[Math.floor(Math.random()*syms.length)]);
+  czQIdx=0;
+  setText('cz-block-num',`Block ${czBlockIdx} / ${CZ_BLOCKS}`);
+  renderCzMapping();renderCzChain();czLoadQuestion();czStartTimer();
 }
 
-function calcCheckAnswers() {
-  if (calcSubmitted) return;
-  calcSubmitted = true;
-  if (calcTimerInterval) { clearInterval(calcTimerInterval); calcTimerInterval = null; }
+function czLoadQuestion(){
+  if(czQIdx>=CZ_Q_PER_BLOCK){czStop();setTimeout(czNewBlock,400);return;}
+  const idxB=czQIdx+1; // chain[1] + chain[0], chain[2]+chain[1] ...
+  const symA=czChain[idxB],symB=czChain[idxB-1];
+  setText('cz-q-label',`Frage ${czQIdx+1} / ${CZ_Q_PER_BLOCK}`);
+  document.getElementById('cz-q-sym-a').textContent=symA;
+  document.getElementById('cz-q-val-a').textContent='= '+czMapping[symA];
+  document.getElementById('cz-q-sym-b').textContent=symB;
+  document.getElementById('cz-q-val-b').textContent='= '+czMapping[symB];
+  const inp=document.getElementById('cz-answer');inp.value='';inp.className='cz-answer-input';
+  document.getElementById('cz-result-badge').className='cz-result-badge';
+  // highlight active pair in chain
+  document.querySelectorAll('.cz-chain-item').forEach((el,i)=>{el.classList.toggle('active',i===idxB||i===idxB-1);});
+  setTimeout(()=>inp.focus(),100);
+}
 
-  const sc = calcScenario;
-  let correct = 0, wrong = 0;
-  const solContainer = document.getElementById('calc-solutions');
-  solContainer.innerHTML = '';
+function czSubmit(){
+  const inp=document.getElementById('cz-answer');
+  const val=parseInt(inp.value);
+  const idxB=czQIdx+1;
+  const correct=czMapping[czChain[idxB]]+czMapping[czChain[idxB-1]];
+  const badge=document.getElementById('cz-result-badge');
+  if(val===correct){czScore.c++;inp.className='cz-answer-input correct';badge.textContent='✓ Richtig!';badge.className='cz-result-badge show ok';}
+  else{czScore.w++;inp.className='cz-answer-input wrong';badge.textContent=`✗ Richtig: ${correct}`;badge.className='cz-result-badge show err';}
+  updateCzScore();czQIdx++;inp.disabled=true;
+  setTimeout(()=>{inp.disabled=false;czLoadQuestion();},700);
+}
 
-  CALC_TIMES.forEach((t, i) => {
-    const frac    = t / 60;
-    const ansDeg  = Math.round(sc.dir * frac);
-    const ansFt   = Math.round(sc.alt * frac);
-    const ansKnAbs= Math.round(sc.startSpd + sc.spdDelta * frac);
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('screen-chinesisch').classList.contains('active')&&e.key==='Enter'){
+    const inp=document.getElementById('cz-answer');if(!inp.disabled&&inp.value!=='')czSubmit();
+  }
+});
 
-    const degInp = document.getElementById(`ci-deg-${i}`);
-    const ftInp  = document.getElementById(`ci-ft-${i}`);
-    const knInp  = document.getElementById(`ci-kn-${i}`);
+function czStartTimer(){
+  czStop();let secs=CZ_SECS;
+  const n=document.getElementById('cz-timer-num'),b=document.getElementById('cz-timer-bar');
+  setText('cz-timer-num',secs);b.style.width='100%';b.className='cz-timer-bar';
+  czTimer=setInterval(()=>{
+    secs--;setText('cz-timer-num',secs);
+    if(n)n.className='cz-timer-num'+(secs<=5?' urgent':'');
+    if(b){b.style.width=(secs/CZ_SECS*100)+'%';b.className='cz-timer-bar'+(secs<=5?' urgent':'');}
+    if(secs<=0){
+      clearInterval(czTimer);
+      // count remaining questions as skipped
+      const remaining=CZ_Q_PER_BLOCK-czQIdx;czScore.sk+=remaining;updateCzScore();
+      setTimeout(czNewBlock,600);
+    }},1000);
+}
 
-    const degVal = parseFloat(degInp?.value);
-    const ftVal  = parseFloat(ftInp?.value);
-    const knVal  = parseFloat(knInp?.value);
-
-    const tolDeg = Math.max(5, Math.abs(ansDeg) * 0.05);
-    const tolFt  = Math.max(25, Math.abs(ansFt) * 0.05);
-    const tolKn  = 5;
-
-    const degOk = !isNaN(degVal) && Math.abs(degVal - ansDeg) <= tolDeg;
-    const ftOk  = !isNaN(ftVal)  && Math.abs(ftVal  - ansFt)  <= tolFt;
-    const knOk  = !isNaN(knVal)  && Math.abs(knVal  - ansKnAbs) <= tolKn;
-
-    [degInp, ftInp, knInp].forEach((inp, j) => {
-      if (!inp) return;
-      const ok = [degOk, ftOk, knOk][j];
-      inp.className = 'calc-input ' + (ok ? 'correct' : 'wrong');
-      inp.disabled = true;
-    });
-
-    if (degOk && ftOk && knOk) correct++;
-    else wrong++;
-
-    if (!degOk || !ftOk || !knOk) {
-      const fracNum = (i + 1) / 4;
-      const fracStr = CALC_FRACS[i] + ` (${t}s)`;
-      let html = `<div class="calc-solution"><strong>✘ LÖSUNG – ${t} SEKUNDEN (${CALC_FRACS[i]} der Zeit)</strong>`;
-      if (!degOk) {
-        html += `Grad: <span style="color:var(--red)">${isNaN(degVal)?'–':degVal+'°'}</span> → Richtig: <span style="color:var(--green)">${ansDeg}°</span><br>`;
-        html += `<span class="calc-solution-step">${sc.dir}° × ${fracNum} = ${ansDeg}°</span><br>`;
-      }
-      if (!ftOk) {
-        html += `Höhe: <span style="color:var(--red)">${isNaN(ftVal)?'–':ftVal+' ft'}</span> → Richtig: <span style="color:var(--green)">${ansFt} ft</span><br>`;
-        html += `<span class="calc-solution-step">${sc.alt} ft × ${fracNum} = ${ansFt} ft</span><br>`;
-      }
-      if (!knOk) {
-        html += `Speed: <span style="color:var(--red)">${isNaN(knVal)?'–':knVal+' kn'}</span> → Richtig: <span style="color:var(--green)">${ansKnAbs} kn</span><br>`;
-        html += `<span class="calc-solution-step">${sc.startSpd} + (${sc.spdDelta} × ${fracNum}) = ${ansKnAbs} kn</span>`;
-      }
-      html += '</div>';
-      solContainer.insertAdjacentHTML('beforeend', html);
-    }
+function renderCzMapping(){
+  const grid=document.getElementById('cz-map-grid');grid.innerHTML='';
+  Object.entries(czMapping).forEach(([sym,val])=>{
+    const item=document.createElement('div');item.className='cz-map-item';
+    item.innerHTML=`<div class="cz-symbol">${sym}</div><div class="cz-num">${val}</div>`;
+    grid.appendChild(item);
   });
-
-  calcScore.c += correct; calcScore.w += wrong; calcScore.t += 4;
-  updateCalcScoreUI();
-
-  const btn = document.getElementById('calc-check-btn');
-  btn.disabled = true; btn.style.opacity = '0.4';
 }
 
-function updateCalcScoreUI() {
-  setText('calc-sc-c', calcScore.c);
-  setText('calc-sc-w', calcScore.w);
-  setText('calc-sc-t', calcScore.t);
+function renderCzChain(){
+  const wrap=document.getElementById('cz-chain-scroll');wrap.innerHTML='';
+  czChain.forEach((sym,i)=>{
+    const item=document.createElement('div');item.className='cz-chain-item';
+    item.innerHTML=`<span class="cz-chain-sym">${sym}</span><div class="cz-chain-arrow">↓</div><div class="cz-chain-val">${czMapping[sym]}</div>`;
+    wrap.appendChild(item);
+    if(i<czChain.length-1){const plus=document.createElement('div');plus.className='cz-chain-plus';plus.textContent='+';wrap.appendChild(plus);}
+  });
 }
 
-function toggleCalcHelp() {
-  const body  = document.getElementById('calc-help-body');
-  const arrow = document.getElementById('calc-help-arrow');
-  const open  = body.classList.toggle('open');
-  arrow.textContent = open ? '▼' : '▶';
-}
+function updateCzScore(){setText('cz-sc-c',czScore.c);setText('cz-sc-w',czScore.w);setText('cz-sc-sk',czScore.sk);}
+
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
 </script>
 </body>
 </html>
