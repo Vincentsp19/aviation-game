@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Aviation Trainer</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -28,7 +27,7 @@
     --speed:    #3caf78;
     --attitude: #d28228;
     --alt:      #a050c8;
-    --climb:    #c85078;
+    --calc:     #3c78dc;
   }
 
   html, body {
@@ -47,16 +46,36 @@
     flex-direction: column;
   }
 
-  /* ── SCREENS ── */
   .screen { display: none; flex-direction: column; flex: 1; padding: 20px 16px 28px; overflow-y: auto; }
   .screen.active { display: flex; }
 
-  /* ── START SCREEN ── */
-  .title-block { text-align: center; margin-bottom: 22px; }
+  /* ── SHARED COMPONENTS ── */
   .game-title { font-size: 22px; font-weight: 800; letter-spacing: 2px; color: var(--white); }
   .game-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .title-block { text-align: center; margin-bottom: 22px; }
 
-  .level-card {
+  .level-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 4px; border: 1px solid;
+    margin-bottom: 5px;
+  }
+
+  .section-divider {
+    width: 100%; height: 1px; background: var(--border);
+    margin: 18px 0;
+  }
+
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--muted); cursor: pointer;
+    margin-bottom: 16px; user-select: none;
+    background: none; border: none; padding: 0;
+  }
+  .back-btn:active { color: var(--white); }
+
+  /* ── START SCREEN ── */
+  .mode-card {
     background: var(--card);
     border-radius: 12px;
     padding: 14px 16px;
@@ -69,29 +88,45 @@
     transition: background 0.15s;
     -webkit-user-select: none;
   }
+  .mode-card:active { background: #1e2336; }
+  .mode-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
+  .mode-info { flex: 1; min-width: 0; }
+  .mode-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .mode-desc  { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .mode-rule  { font-size: 10px; color: #5a5f78; margin-top: 4px; }
+  .mode-btn {
+    color: var(--white); border: none; border-radius: 8px;
+    padding: 10px 14px; font-size: 13px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  }
+
+  /* ── LEVEL SELECT (Memory) ── */
+  .level-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    -webkit-user-select: none;
+  }
   .level-card:active { background: #1e2336; }
   .level-accent { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
   .level-info { flex: 1; min-width: 0; }
-  .level-badge {
-    display: inline-block;
-    font-size: 10px; font-weight: 700; letter-spacing: 1px;
-    padding: 2px 8px; border-radius: 4px; border: 1px solid;
-    margin-bottom: 5px;
-  }
   .level-title  { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
   .level-params { font-size: 11px; color: var(--muted); line-height: 1.65; }
   .level-rule   { font-size: 10px; color: #5a5f78; margin-top: 4px; }
-
   .level-btn {
     color: var(--white); border: none; border-radius: 8px;
     padding: 10px 14px; font-size: 13px; font-weight: 700;
     cursor: pointer; white-space: nowrap; flex-shrink: 0;
   }
-  .easy-border   { border-color: var(--easy)   !important; }
-  .medium-border { border-color: var(--medium) !important; }
-  .hard-border   { border-color: var(--hard)   !important; }
 
-  /* ── DISPLAY SCREEN ── */
+  /* ── MEMORY: DISPLAY SCREEN ── */
   .screen-header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 14px;
@@ -118,11 +153,9 @@
   .param-label  { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 2px; }
   .param-value  { font-size: 30px; font-weight: 800; line-height: 1.1; }
   .param-unit   { font-size: 12px; color: var(--muted); }
-
-  /* Attitude display – show direction text below value */
   .param-att-dir { font-size: 12px; color: var(--yellow); font-weight: 600; margin-top: 1px; }
 
-  /* ── INPUT SCREEN ── */
+  /* ── MEMORY: INPUT SCREEN ── */
   .input-header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 12px;
@@ -163,13 +196,11 @@
     min-width: 0;
   }
   .input-row input:focus { border-color: var(--accent); }
-  .input-row input.w-num     { width: 110px; }
-  .input-row input.w-dec     { width: 120px; }
-  .input-row input.w-dir     { width: 100px; }
+  .input-row input.w-num { width: 110px; }
+  .input-row input.w-dir { width: 100px; }
 
   .input-hint { font-size: 10px; color: var(--muted); white-space: nowrap; }
 
-  /* Attitude: two inputs side by side */
   .att-row { display: flex; align-items: center; gap: 6px; }
   .att-row select {
     background: var(--input-bg);
@@ -186,7 +217,6 @@
   }
   .att-row select:focus { border-color: var(--accent); }
 
-  /* Correct value badge */
   .correct-value {
     font-size: 12px; font-weight: 700;
     border-radius: 6px; padding: 3px 7px;
@@ -222,7 +252,6 @@
   .score-divider { width: 100%; height: 1px; background: var(--border); margin-bottom: 14px; }
   .score-percent { font-size: 30px; font-weight: 800; }
   .score-acc-sub { font-size: 12px; color: var(--muted); margin-top: 4px; margin-bottom: 24px; }
-
   .score-btn {
     width: 220px; padding: 13px;
     border: none; border-radius: 12px;
@@ -232,7 +261,6 @@
   .score-btn.primary   { background: var(--accent); color: var(--white); }
   .score-btn.secondary { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
   .score-btn:active { opacity: 0.8; }
-
   .history-block { width: 100%; margin-bottom: 18px; }
   .history-title { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
   .history-row {
@@ -244,74 +272,234 @@
   .history-round { color: var(--muted); }
   .history-score { font-weight: 700; }
 
+  /* ── CALC MODE ── */
+  .calc-scenario {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .calc-scenario-label {
+    font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .calc-params-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .calc-param-box {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .calc-param-lbl { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .calc-param-val {
+    font-size: 18px; font-weight: 800; line-height: 1.1;
+  }
+  .calc-param-val.pos { color: var(--green); }
+  .calc-param-val.neg { color: var(--red); }
+  .calc-param-val.neu { color: #3c78dc; }
+
+  .calc-timer-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .calc-timer-num {
+    font-size: 32px; font-weight: 800; color: var(--yellow); line-height: 1;
+    transition: color 0.3s;
+  }
+  .calc-timer-num.urgent { color: var(--red); }
+  .calc-timer-bar-outer {
+    flex: 1; height: 4px; background: rgba(220,170,30,0.15);
+    border-radius: 2px; overflow: hidden; margin: 0 12px;
+  }
+  .calc-timer-bar { height: 100%; background: var(--yellow); transition: width 0.5s linear; }
+  .calc-timer-bar.urgent { background: var(--red); }
+
+  .calc-table-wrap { overflow-x: auto; margin-bottom: 10px; }
+  .calc-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    min-width: 340px;
+  }
+  .calc-table th {
+    font-size: 10px; color: var(--muted); letter-spacing: 1px;
+    text-align: left; padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+  .calc-table td {
+    padding: 7px 6px; border-bottom: 1px solid rgba(40,45,60,0.6);
+    vertical-align: middle;
+  }
+  .calc-table tr:last-child td { border-bottom: none; }
+
+  .calc-time-label {
+    font-size: 15px; font-weight: 800; color: var(--accent);
+    white-space: nowrap;
+  }
+  .calc-frac { font-size: 10px; color: var(--muted); margin-left: 4px; }
+
+  .calc-input {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--white);
+    font-size: 16px; font-weight: 700;
+    padding: 5px 8px; width: 78px;
+    outline: none; text-align: center;
+    -webkit-appearance: none;
+  }
+  .calc-input:focus { border-color: var(--accent); }
+  .calc-input.correct { border-color: var(--green); background: rgba(30,160,90,0.1); color: var(--green); }
+  .calc-input.wrong   { border-color: var(--red);   background: rgba(200,50,50,0.1);  color: var(--red);   }
+  .calc-input:disabled { pointer-events: none; }
+
+  .calc-unit { font-size: 10px; color: var(--muted); white-space: nowrap; }
+
+  .calc-solution {
+    background: rgba(200,50,50,0.07);
+    border: 1px solid rgba(200,50,50,0.22);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #e07080;
+    line-height: 1.8;
+    margin: 2px 0 8px;
+  }
+  .calc-solution strong {
+    color: #ff99aa; font-size: 10px; letter-spacing: 0.5px;
+    display: block; margin-bottom: 2px;
+  }
+  .calc-solution-step { color: #6a7a8a; font-size: 10.5px; }
+
+  .new-task-btn {
+    width: 100%; padding: 14px;
+    border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 700; letter-spacing: 1px;
+    cursor: pointer; transition: opacity 0.2s;
+    color: var(--white);
+  }
+  .new-task-btn:active { opacity: 0.8; }
+
+  .calc-score-row {
+    display: flex; gap: 10px; margin-top: 12px;
+  }
+  .calc-score-box {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px; text-align: center;
+  }
+  .calc-score-num { font-size: 22px; font-weight: 800; }
+  .calc-score-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+
+  /* Help tooltip */
+  .help-toggle {
+    font-size: 11px; color: var(--muted); cursor: pointer;
+    padding: 6px 0; user-select: none; display: flex; align-items: center; gap: 5px;
+  }
+  .help-body {
+    background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+    font-size: 11px; color: #6a7a9a; line-height: 1.75;
+    display: none;
+  }
+  .help-body.open { display: block; }
+  .help-body .hl { color: var(--accent); }
+
   .hidden { display: none !important; }
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- ══════════════════════════════════════
-     START SCREEN
-══════════════════════════════════════ -->
-<div id="screen-start" class="screen active">
+<!-- ══════════════════════════ MAIN HOME ══════════════════════════ -->
+<div id="screen-home" class="screen active">
   <div class="title-block">
     <div class="game-title">✈ AVIATION TRAINER</div>
-    <div class="game-sub">Cockpit Parameter Memory – Wähle dein Level</div>
+    <div class="game-sub">Wähle deinen Trainingsmodus</div>
   </div>
 
-  <!-- EASY -->
-  <div class="level-card easy-border" onclick="selectLevel('easy')">
+  <!-- Mode: Memory -->
+  <div class="mode-card" onclick="showScreen('screen-memory-levels')" style="border-color:var(--accent)">
+    <div class="mode-accent" style="background:var(--accent)"></div>
+    <div class="mode-info">
+      <span class="level-badge" style="color:var(--accent);border-color:var(--accent)">MODUS 1</span>
+      <div class="mode-title">🧠 Cockpit Memory</div>
+      <div class="mode-desc">
+        Merke dir Kompasskurs, Geschwindigkeit, Luftlage und mehr – und gib sie nach dem Timer ein.
+      </div>
+      <div class="mode-rule">3 Level · 5 Runden · 6 Sek Anzeige</div>
+    </div>
+    <button class="mode-btn" style="background:var(--accent)"
+            onclick="showScreen('screen-memory-levels');event.stopPropagation()">START</button>
+  </div>
+
+  <!-- Mode: Calculator -->
+  <div class="mode-card" onclick="startCalcMode('easy')" style="border-color:var(--green)">
+    <div class="mode-accent" style="background:var(--green)"></div>
+    <div class="mode-info">
+      <span class="level-badge" style="color:var(--green);border-color:var(--green)">MODUS 2</span>
+      <div class="mode-title">✈ Kursrechner</div>
+      <div class="mode-desc">
+        Berechne Grad, Höhe und Geschwindigkeit für jeden Zeitpunkt – genau wie im echten Pilotentest.
+      </div>
+      <div class="mode-rule">
+        <span style="color:var(--green)">LEICHT – Kein Timer</span> &nbsp;|&nbsp;
+        <span style="color:var(--red);cursor:pointer" onclick="startCalcMode('hard');event.stopPropagation()">SCHWER – 60 Sek ▶</span>
+      </div>
+    </div>
+    <button class="mode-btn" style="background:var(--green)"
+            onclick="startCalcMode('easy');event.stopPropagation()">START</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════ MEMORY: LEVEL SELECT ══════════════════════════ -->
+<div id="screen-memory-levels" class="screen">
+  <button class="back-btn" onclick="showScreen('screen-home')">◀ Zurück</button>
+  <div class="title-block" style="margin-bottom:16px">
+    <div class="game-title">🧠 COCKPIT MEMORY</div>
+    <div class="game-sub">Wähle dein Level</div>
+  </div>
+
+  <div class="level-card" style="border-color:var(--easy)" onclick="selectMemoryLevel('easy')">
     <div class="level-accent" style="background:var(--easy)"></div>
     <div class="level-info">
       <span class="level-badge" style="color:var(--easy);border-color:var(--easy)">EASY</span>
       <div class="level-title">Einfach</div>
-      <div class="level-params">
-        🧭 Kompasskurs — 0–365°<br>
-        💨 Geschwindigkeit — 0–300 kn<br>
-        🔄 Luftlage — z.B. 30° Linkskurve
-      </div>
+      <div class="level-params">🧭 Kompasskurs · 💨 Geschwindigkeit · 🔄 Luftlage</div>
       <div class="level-rule">3 Parameter · 5 Runden · 6 Sekunden</div>
     </div>
     <button class="level-btn" style="background:var(--easy)"
-            onclick="selectLevel('easy');event.stopPropagation()">START</button>
+            onclick="selectMemoryLevel('easy');event.stopPropagation()">START</button>
   </div>
 
-  <!-- MEDIUM -->
-  <div class="level-card medium-border" onclick="selectLevel('medium')">
+  <div class="level-card" style="border-color:var(--medium)" onclick="selectMemoryLevel('medium')">
     <div class="level-accent" style="background:var(--medium)"></div>
     <div class="level-info">
       <span class="level-badge" style="color:var(--medium);border-color:var(--medium)">MEDIUM</span>
       <div class="level-title">Mittel</div>
-      <div class="level-params">
-        🧭 Kompasskurs · 💨 Geschwindigkeit · 🔄 Luftlage<br>
-        📐 Höhe — 0–15,000 ft (500er Schritte)
-      </div>
+      <div class="level-params">🧭 Kurs · 💨 Speed · 🔄 Luftlage · 📐 Höhe (500er)</div>
       <div class="level-rule">4 Parameter · 5 Runden · 6 Sekunden</div>
     </div>
     <button class="level-btn" style="background:var(--medium)"
-            onclick="selectLevel('medium');event.stopPropagation()">START</button>
+            onclick="selectMemoryLevel('medium');event.stopPropagation()">START</button>
   </div>
 
-  <!-- HARD -->
-  <div class="level-card hard-border" onclick="selectLevel('hard')">
+  <div class="level-card" style="border-color:var(--hard)" onclick="selectMemoryLevel('hard')">
     <div class="level-accent" style="background:var(--hard)"></div>
     <div class="level-info">
       <span class="level-badge" style="color:var(--hard);border-color:var(--hard)">HARD</span>
       <div class="level-title">Schwer</div>
-      <div class="level-params">
-        🧭 Kurs · 💨 Speed · 🔄 Luftlage · 📐 Höhe<br>
-        📈 Steigrate — z.B. +1.5 / −0.5 (×100 ft/min)
-      </div>
+      <div class="level-params">🧭 Kurs · 💨 Speed · 🔄 Luftlage · 📐 Höhe · 📈 Steigrate</div>
       <div class="level-rule">5 Parameter · 5 Runden · 6 Sekunden</div>
     </div>
     <button class="level-btn" style="background:var(--hard)"
-            onclick="selectLevel('hard');event.stopPropagation()">START</button>
+            onclick="selectMemoryLevel('hard');event.stopPropagation()">START</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     DISPLAY SCREEN
-══════════════════════════════════════ -->
+<!-- ══════════════════════════ MEMORY: DISPLAY ══════════════════════════ -->
 <div id="screen-display" class="screen">
   <div class="screen-header">
     <div class="round-label" id="d-round">Runde 1 / 5</div>
@@ -320,8 +508,6 @@
       <div class="countdown-text" id="d-phase">MEMORIZE</div>
     </div>
   </div>
-
-  <!-- KOMPASSKURS -->
   <div class="param-card">
     <div class="param-accent" style="background:var(--compass)"></div>
     <div class="param-inner">
@@ -329,8 +515,6 @@
       <div><span class="param-value" id="d-compass">—</span><span class="param-unit"> °</span></div>
     </div>
   </div>
-
-  <!-- GESCHWINDIGKEIT -->
   <div class="param-card">
     <div class="param-accent" style="background:var(--speed)"></div>
     <div class="param-inner">
@@ -338,8 +522,6 @@
       <div><span class="param-value" id="d-speed">—</span><span class="param-unit"> kn</span></div>
     </div>
   </div>
-
-  <!-- LUFTLAGE -->
   <div class="param-card">
     <div class="param-accent" style="background:var(--attitude)"></div>
     <div class="param-inner">
@@ -348,8 +530,6 @@
       <div class="param-att-dir" id="d-att-dir">—</div>
     </div>
   </div>
-
-  <!-- HÖHE (Medium+) -->
   <div class="param-card hidden" id="d-alt-card">
     <div class="param-accent" style="background:var(--alt)"></div>
     <div class="param-inner">
@@ -357,67 +537,49 @@
       <div><span class="param-value" id="d-alt">—</span><span class="param-unit"> ft</span></div>
     </div>
   </div>
-
-  <!-- STEIGRATE (Hard) -->
   <div class="param-card hidden" id="d-climb-card">
-    <div class="param-accent" style="background:var(--climb)"></div>
+    <div class="param-accent" style="background:#c85078"></div>
     <div class="param-inner">
       <div class="param-label">📈 STEIGRATE</div>
-      <div>
-        <span class="param-value" id="d-climb">—</span>
-        <span class="param-unit"> ×100 ft/min</span>
-      </div>
+      <div><span class="param-value" id="d-climb">—</span><span class="param-unit"> ×100 ft/min</span></div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     INPUT SCREEN
-══════════════════════════════════════ -->
+<!-- ══════════════════════════ MEMORY: INPUT ══════════════════════════ -->
 <div id="screen-input" class="screen">
   <div class="input-header">
     <div class="round-label" id="i-round">Runde 1 / 5</div>
-    <span class="level-badge-sm" id="i-badge"
-          style="color:var(--easy);border-color:var(--easy)">EASY</span>
+    <span class="level-badge-sm" id="i-badge" style="color:var(--easy);border-color:var(--easy)">EASY</span>
   </div>
-
-  <!-- KOMPASSKURS -->
   <div class="input-card" id="card-compass">
     <div class="input-accent" style="background:var(--compass)"></div>
     <div class="input-body">
       <div class="input-title">🧭 KOMPASSKURS</div>
       <div class="input-row">
-        <input type="number" id="in-compass" class="w-num"
-               placeholder="0–365" inputmode="numeric" min="0" max="365">
+        <input type="number" id="in-compass" class="w-num" placeholder="0–365" inputmode="numeric" min="0" max="365">
         <span class="input-hint">°</span>
       </div>
     </div>
     <div class="correct-value" id="cv-compass"></div>
   </div>
-
-  <!-- GESCHWINDIGKEIT -->
   <div class="input-card" id="card-speed">
     <div class="input-accent" style="background:var(--speed)"></div>
     <div class="input-body">
       <div class="input-title">💨 GESCHWINDIGKEIT</div>
       <div class="input-row">
-        <input type="number" id="in-speed" class="w-num"
-               placeholder="0–300" inputmode="numeric" min="0" max="300">
+        <input type="number" id="in-speed" class="w-num" placeholder="0–300" inputmode="numeric" min="0" max="300">
         <span class="input-hint">kn</span>
       </div>
     </div>
     <div class="correct-value" id="cv-speed"></div>
   </div>
-
-  <!-- LUFTLAGE -->
   <div class="input-card" id="card-att">
     <div class="input-accent" style="background:var(--attitude)"></div>
     <div class="input-body">
       <div class="input-title">🔄 LUFTLAGE</div>
       <div class="att-row">
-        <input type="number" id="in-att-deg" class="w-dir"
-               placeholder="Grad" inputmode="numeric" min="0" max="90"
-               style="width:90px">
+        <input type="number" id="in-att-deg" class="w-dir" placeholder="Grad" inputmode="numeric" min="0" max="90" style="width:90px">
         <select id="in-att-dir">
           <option value="Gerade">Gerade</option>
           <option value="Links">◀ Links</option>
@@ -427,366 +589,515 @@
     </div>
     <div class="correct-value" id="cv-att"></div>
   </div>
-
-  <!-- HÖHE (Medium+) -->
   <div class="input-card hidden" id="card-alt">
     <div class="input-accent" style="background:var(--alt)"></div>
     <div class="input-body">
       <div class="input-title">📐 HÖHE</div>
       <div class="input-row">
-        <input type="number" id="in-alt" class="w-num"
-               placeholder="ft" inputmode="numeric" min="0" max="15000" step="500">
+        <input type="number" id="in-alt" class="w-num" placeholder="ft" inputmode="numeric" min="0" max="15000" step="500">
         <span class="input-hint">ft (×500)</span>
       </div>
     </div>
     <div class="correct-value" id="cv-alt"></div>
   </div>
-
-  <!-- STEIGRATE (Hard) -->
   <div class="input-card hidden" id="card-climb">
-    <div class="input-accent" style="background:var(--climb)"></div>
+    <div class="input-accent" style="background:#c85078"></div>
     <div class="input-body">
       <div class="input-title">📈 STEIGRATE</div>
       <div class="input-row">
-        <input type="text" id="in-climb" class="w-dec"
-               placeholder="+1.5 / −0.5" inputmode="decimal">
+        <input type="text" id="in-climb" class="w-num" placeholder="+1.5 / −0.5" inputmode="decimal">
         <span class="input-hint">×100 ft/min</span>
       </div>
     </div>
     <div class="correct-value" id="cv-climb"></div>
   </div>
-
-  <button class="submit-btn" id="submit-btn" onclick="checkAnswers()">
-    ABGEBEN
-  </button>
+  <button class="submit-btn" id="submit-btn" onclick="memoryCheckAnswers()">ABGEBEN</button>
 </div>
 
-<!-- ══════════════════════════════════════
-     SCORE SCREEN
-══════════════════════════════════════ -->
+<!-- ══════════════════════════ MEMORY: SCORE ══════════════════════════ -->
 <div id="screen-score" class="screen score-screen">
   <div class="score-title">RUNDE BEENDET</div>
-  <span class="score-level-badge" id="s-badge"
-        style="color:var(--easy);border-color:var(--easy)">EASY</span>
-
+  <span class="score-level-badge" id="s-badge" style="color:var(--easy);border-color:var(--easy)">EASY</span>
   <div class="score-number" id="s-score">0 / 15</div>
   <div class="score-sub">richtige Parameter</div>
   <div class="score-divider"></div>
   <div class="score-percent" id="s-percent">0%</div>
   <div class="score-acc-sub">Genauigkeit</div>
-
   <div class="history-block" id="s-history"></div>
+  <button class="score-btn primary"   onclick="memoryPlayAgain()">NOCHMAL SPIELEN</button>
+  <button class="score-btn secondary" onclick="showScreen('screen-home')">HAUPTMENÜ</button>
+</div>
 
-  <button class="score-btn primary"   onclick="playAgain()">NOCHMAL SPIELEN</button>
-  <button class="score-btn secondary" onclick="showScreen('start')">HAUPTMENÜ</button>
+<!-- ══════════════════════════ CALC SCREEN ══════════════════════════ -->
+<div id="screen-calc" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <button class="back-btn" style="margin-bottom:0" onclick="showScreen('screen-home')">◀ Hauptmenü</button>
+    <span id="calc-mode-badge" class="level-badge-sm" style="color:var(--green);border-color:var(--green)">LEICHT</span>
+  </div>
+
+  <!-- Timer (hard mode only) -->
+  <div id="calc-timer-wrap" class="hidden" style="margin-bottom:14px;">
+    <div class="calc-timer-row">
+      <div class="calc-timer-num" id="calc-timer-num">60</div>
+      <div class="calc-timer-bar-outer">
+        <div class="calc-timer-bar" id="calc-timer-bar" style="width:100%"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;">SEK</div>
+    </div>
+  </div>
+
+  <!-- Help -->
+  <div class="help-toggle" onclick="toggleCalcHelp()">
+    <span id="calc-help-arrow">▶</span> Wie funktioniert das?
+  </div>
+  <div class="help-body" id="calc-help-body">
+    Du bekommst zufällige Aufgaben wie im Pilotentest. Für jeden der <span class="hl">4 Zeitpunkte (15s, 30s, 45s, 60s)</span> musst du berechnen welche Werte du erreicht haben musst.<br><br>
+    <b>Geschwindigkeit:</b> Gib die <span class="hl">absolute Geschwindigkeit</span> ein (z.B. 130 kn).<br>
+    Nach Auswertung siehst du bei falschen Antworten den vollständigen Lösungsweg.
+  </div>
+
+  <!-- Scenario Card -->
+  <div class="calc-scenario">
+    <div class="calc-scenario-label">📋 AUFGABENSTELLUNG — In 60 Sekunden erreichst du:</div>
+    <div class="calc-params-grid">
+      <div class="calc-param-box">
+        <div class="calc-param-lbl">Richtung</div>
+        <div class="calc-param-val" id="calc-dir-val">—</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px" id="calc-dir-hint">—</div>
+      </div>
+      <div class="calc-param-box">
+        <div class="calc-param-lbl">Höhe</div>
+        <div class="calc-param-val" id="calc-alt-val">—</div>
+      </div>
+      <div class="calc-param-box">
+        <div class="calc-param-lbl">Start-Speed</div>
+        <div class="calc-param-val neu" id="calc-spd-start">—</div>
+      </div>
+      <div class="calc-param-box">
+        <div class="calc-param-lbl">Ziel-Speed</div>
+        <div class="calc-param-val neu" id="calc-spd-end">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkpoint Table -->
+  <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;">ZWISCHENWERTE BERECHNEN</div>
+  <div class="calc-table-wrap">
+    <table class="calc-table">
+      <thead>
+        <tr>
+          <th>Sekunde</th>
+          <th>Grad °</th>
+          <th>Höhe ft</th>
+          <th>Speed kn</th>
+        </tr>
+      </thead>
+      <tbody id="calc-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Solutions container -->
+  <div id="calc-solutions"></div>
+
+  <!-- Score -->
+  <div class="calc-score-row">
+    <div class="calc-score-box">
+      <div class="calc-score-num" id="calc-sc-c" style="color:var(--green)">0</div>
+      <div class="calc-score-lbl">RICHTIG</div>
+    </div>
+    <div class="calc-score-box">
+      <div class="calc-score-num" id="calc-sc-w" style="color:var(--red)">0</div>
+      <div class="calc-score-lbl">FALSCH</div>
+    </div>
+    <div class="calc-score-box">
+      <div class="calc-score-num" id="calc-sc-t" style="color:var(--accent)">0</div>
+      <div class="calc-score-lbl">GESAMT</div>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div style="display:flex;gap:8px;margin-top:10px;">
+    <button class="new-task-btn" id="calc-check-btn" style="background:var(--accent)"
+            onclick="calcCheckAnswers()">✔ AUSWERTEN</button>
+    <button class="new-task-btn" style="background:var(--card);border:1px solid var(--border);color:var(--muted);flex:0 0 auto;width:auto;padding:14px 18px;"
+            onclick="calcNewTask()">⟳ NEU</button>
+  </div>
 </div>
 
 </div><!-- #app -->
 
 <script>
 // ══════════════════════════════════════════════
-// CONSTANTS
-// ══════════════════════════════════════════════
-const TOTAL_ROUNDS = 5;
-
-// Steigrate-Werte: Vielfache von 0.5 von -3.0 bis +3.0 (außer 0)
-const CLIMB_VALUES = [];
-for (let v = -30; v <= 30; v++) {
-  if (v !== 0) CLIMB_VALUES.push(v / 10); // -3.0 … -0.5, +0.5 … +3.0
-}
-
-// Attitude Degrees: 5er-Schritte 0–90, aber 0 = Gerade
-const ATT_DEGS = [0,5,10,15,20,25,30,35,40,45,60,75,90];
-const ATT_DIRS = ['Links','Rechts'];
-
-// ══════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════
-let level          = 'easy';
-let currentRound   = 0;
-let correctTotal   = 0;
-let paramsPerRound = 3;
-let countdownTimer = null;
-let roundHistory   = [];
-
-let tCompass, tSpeed, tAttDeg, tAttDir, tAlt, tClimb;
-
-// ══════════════════════════════════════════════
 // SCREEN MANAGEMENT
 // ══════════════════════════════════════════════
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById(name).classList.add('active');
+}
+
+function toggle(id, show) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('hidden', !show);
+}
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
 }
 
 // ══════════════════════════════════════════════
-// LEVEL SELECTION
+// ── MEMORY MODE ──
 // ══════════════════════════════════════════════
-function selectLevel(lv) {
-  level          = lv;
-  currentRound   = 0;
-  correctTotal   = 0;
-  roundHistory   = [];
-  paramsPerRound = lv === 'easy' ? 3 : lv === 'medium' ? 4 : 5;
-  startRound();
+const MEM_TOTAL = 5;
+const CLIMB_VALUES = [];
+for (let v = -30; v <= 30; v++) { if (v !== 0) CLIMB_VALUES.push(v / 10); }
+const ATT_DEGS = [0,5,10,15,20,25,30,35,40,45,60,75,90];
+const ATT_DIRS = ['Links','Rechts'];
+
+let memLevel = 'easy', memRound = 0, memCorrect = 0, memParams = 3;
+let memHistory = [], memTimer = null;
+let tCompass, tSpeed, tAttDeg, tAttDir, tAlt, tClimb;
+
+function selectMemoryLevel(lv) {
+  memLevel = lv; memRound = 0; memCorrect = 0; memHistory = [];
+  memParams = lv === 'easy' ? 3 : lv === 'medium' ? 4 : 5;
+  memStartRound();
 }
 
-// ══════════════════════════════════════════════
-// ROUND
-// ══════════════════════════════════════════════
-function startRound() {
-  currentRound++;
-  generateValues();
-  applyLevelUI();
-  showDisplayScreen();
+function memStartRound() {
+  memRound++;
+  memGenValues();
+  memApplyLevelUI();
+  memShowDisplay();
 }
 
-function generateValues() {
-  // Kompasskurs 0–365
+function memGenValues() {
   tCompass = Math.floor(Math.random() * 366);
-
-  // Geschwindigkeit 0–300 kn (ganze Zahlen)
-  tSpeed = Math.floor(Math.random() * 301);
-
-  // Luftlage: Grad aus Liste, Richtung
+  tSpeed   = Math.floor(Math.random() * 301);
   const deg = ATT_DEGS[Math.floor(Math.random() * ATT_DEGS.length)];
-  tAttDeg = deg;
-  if (deg === 0) {
-    tAttDir = 'Gerade';
-  } else {
-    tAttDir = ATT_DIRS[Math.floor(Math.random() * 2)];
-  }
-
-  // Höhe: 0–15000 ft in 500er Schritten
-  tAlt = Math.floor(Math.random() * 31) * 500; // 0,500,…,15000
-
-  // Steigrate: Vielfaches von 0.5, positiv oder negativ, nicht 0
-  tClimb = CLIMB_VALUES[Math.floor(Math.random() * CLIMB_VALUES.length)];
+  tAttDeg  = deg;
+  tAttDir  = deg === 0 ? 'Gerade' : ATT_DIRS[Math.floor(Math.random() * 2)];
+  tAlt     = Math.floor(Math.random() * 31) * 500;
+  tClimb   = CLIMB_VALUES[Math.floor(Math.random() * CLIMB_VALUES.length)];
 }
 
-function applyLevelUI() {
-  const isMedium = level === 'medium' || level === 'hard';
-  const isHard   = level === 'hard';
-
-  toggle('d-alt-card',   isMedium);
-  toggle('d-climb-card', isHard);
-  toggle('card-alt',     isMedium);
-  toggle('card-climb',   isHard);
-
+function memApplyLevelUI() {
+  const isMed  = memLevel === 'medium' || memLevel === 'hard';
+  const isHard = memLevel === 'hard';
+  toggle('d-alt-card',   isMed);  toggle('d-climb-card', isHard);
+  toggle('card-alt',     isMed);  toggle('card-climb',   isHard);
   const colors = { easy:'var(--easy)', medium:'var(--medium)', hard:'var(--hard)' };
   const names  = { easy:'EASY', medium:'MEDIUM', hard:'HARD' };
   const badge  = document.getElementById('i-badge');
-  badge.textContent    = names[level];
-  badge.style.color    = colors[level];
-  badge.style.borderColor = colors[level];
+  badge.textContent = names[memLevel];
+  badge.style.color = badge.style.borderColor = colors[memLevel];
 }
 
-// ══════════════════════════════════════════════
-// DISPLAY PHASE
-// ══════════════════════════════════════════════
-function showDisplayScreen() {
-  setText('d-round',   `Runde ${currentRound} / ${TOTAL_ROUNDS}`);
+function memShowDisplay() {
+  setText('d-round', `Runde ${memRound} / ${MEM_TOTAL}`);
   setText('d-compass', tCompass);
-  setText('d-speed',   tSpeed);
+  setText('d-speed', tSpeed);
   setText('d-att-deg', tAttDeg === 0 ? '0' : tAttDeg);
-  setText('d-alt',     tAlt);
-
-  // Attitude direction label
+  setText('d-alt', tAlt);
   const dirEl = document.getElementById('d-att-dir');
-  if (tAttDeg === 0) {
-    dirEl.textContent = 'Geradeaus';
-    dirEl.style.color = '#787d91';
-  } else {
-    dirEl.textContent = tAttDir === 'Links' ? '◀ Linkskurve' : 'Rechtskurve ▶';
-    dirEl.style.color = tAttDir === 'Links' ? '#3c78dc' : '#d28228';
-  }
+  if (tAttDeg === 0) { dirEl.textContent = 'Geradeaus'; dirEl.style.color = '#787d91'; }
+  else { dirEl.textContent = tAttDir === 'Links' ? '◀ Linkskurve' : 'Rechtskurve ▶'; dirEl.style.color = tAttDir === 'Links' ? '#3c78dc' : '#d28228'; }
+  setText('d-climb', (tClimb > 0 ? '+' : '') + tClimb.toFixed(1));
 
-  // Climb rate with sign
-  const climbSign = tClimb > 0 ? '+' : '';
-  setText('d-climb', climbSign + tClimb.toFixed(1));
+  const numEl = document.getElementById('d-countdown');
+  const phEl  = document.getElementById('d-phase');
+  numEl.textContent = '6'; numEl.className = 'countdown-num';
+  phEl.textContent  = 'MEMORIZE'; phEl.className = 'countdown-text';
+  showScreen('screen-display');
 
-  // Countdown reset
-  const numEl   = document.getElementById('d-countdown');
-  const phaseEl = document.getElementById('d-phase');
-  numEl.textContent   = '6';
-  numEl.className     = 'countdown-num';
-  phaseEl.textContent = 'MEMORIZE';
-  phaseEl.className   = 'countdown-text';
-
-  showScreen('display');
-
-  if (countdownTimer) clearInterval(countdownTimer);
+  if (memTimer) clearInterval(memTimer);
   let secs = 6;
-  countdownTimer = setInterval(() => {
+  memTimer = setInterval(() => {
     secs--;
     numEl.textContent = secs;
-    if (secs <= 2) {
-      numEl.className  = 'countdown-num urgent';
-      phaseEl.className = 'countdown-text urgent';
-    }
-    if (secs <= 0) {
-      clearInterval(countdownTimer);
-      showInputScreen();
-    }
+    if (secs <= 2) { numEl.className = 'countdown-num urgent'; phEl.className = 'countdown-text urgent'; }
+    if (secs <= 0) { clearInterval(memTimer); memShowInput(); }
   }, 1000);
 }
 
-// ══════════════════════════════════════════════
-// INPUT PHASE
-// ══════════════════════════════════════════════
-function showInputScreen() {
-  setText('i-round', `Runde ${currentRound} / ${TOTAL_ROUNDS}`);
-
-  // Clear all inputs
+function memShowInput() {
+  setText('i-round', `Runde ${memRound} / ${MEM_TOTAL}`);
   ['in-compass','in-speed','in-att-deg','in-alt','in-climb'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+    const el = document.getElementById(id); if (el) el.value = '';
   });
-  // Reset attitude direction select
   document.getElementById('in-att-dir').value = 'Gerade';
-
-  // Reset card styles
   ['card-compass','card-speed','card-att','card-alt','card-climb'].forEach(id => {
-    const c = document.getElementById(id);
-    if (c) c.classList.remove('correct','wrong');
+    const c = document.getElementById(id); if (c) c.classList.remove('correct','wrong');
   });
   ['cv-compass','cv-speed','cv-att','cv-alt','cv-climb'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.classList.remove('visible','wrong-shown'); el.textContent = ''; }
   });
-
   document.getElementById('submit-btn').disabled = false;
-  showScreen('input');
-
+  showScreen('screen-input');
   setTimeout(() => document.getElementById('in-compass').focus(), 300);
 }
 
-// ══════════════════════════════════════════════
-// CHECK ANSWERS
-// ══════════════════════════════════════════════
-function checkAnswers() {
-  // Kompasskurs
-  const entCompass = parseInt(document.getElementById('in-compass').value);
-  const compassOk  = entCompass === tCompass;
-  markCard('card-compass','cv-compass', compassOk, tCompass + '°');
-
-  // Geschwindigkeit
-  const entSpeed = parseInt(document.getElementById('in-speed').value);
-  const speedOk  = entSpeed === tSpeed;
-  markCard('card-speed','cv-speed', speedOk, tSpeed + ' kn');
-
-  // Luftlage: Grad + Richtung
-  const entAttDeg = parseInt(document.getElementById('in-att-deg').value);
-  const entAttDir = document.getElementById('in-att-dir').value;
-  // Normalize: "Links" and "◀ Links" both acceptable; strip the arrow
-  const entDirClean = entAttDir.replace('◀ ','').replace(' ▶','').trim();
-  let attOk;
-  if (tAttDeg === 0) {
-    attOk = (entAttDeg === 0) && (entDirClean === 'Gerade');
-  } else {
-    attOk = (entAttDeg === tAttDeg) && (entDirClean === tAttDir);
+function memoryCheckAnswers() {
+  const cmpOk = parseInt(document.getElementById('in-compass').value) === tCompass;
+  memMarkCard('card-compass','cv-compass', cmpOk, tCompass + '°');
+  const spdOk = parseInt(document.getElementById('in-speed').value) === tSpeed;
+  memMarkCard('card-speed','cv-speed', spdOk, tSpeed + ' kn');
+  const entDeg = parseInt(document.getElementById('in-att-deg').value);
+  const entDir = document.getElementById('in-att-dir').value.replace('◀ ','').replace(' ▶','').trim();
+  const attOk  = tAttDeg === 0 ? (entDeg === 0 && entDir === 'Gerade') : (entDeg === tAttDeg && entDir === tAttDir);
+  const attLbl = tAttDeg === 0 ? '0° Gerade' : `${tAttDeg}° ${tAttDir}`;
+  memMarkCard('card-att','cv-att', attOk, attLbl);
+  let rScore = (cmpOk?1:0) + (spdOk?1:0) + (attOk?1:0);
+  if (memLevel === 'medium' || memLevel === 'hard') {
+    const altOk = parseInt(document.getElementById('in-alt').value) === tAlt;
+    memMarkCard('card-alt','cv-alt', altOk, tAlt + ' ft'); rScore += altOk?1:0;
   }
-  const attLabel = tAttDeg === 0 ? '0° Gerade' : `${tAttDeg}° ${tAttDir}`;
-  markCard('card-att','cv-att', attOk, attLabel);
-
-  let roundScore = (compassOk?1:0) + (speedOk?1:0) + (attOk?1:0);
-
-  // Höhe (Medium+)
-  if (level === 'medium' || level === 'hard') {
-    const entAlt = parseInt(document.getElementById('in-alt').value);
-    const altOk  = entAlt === tAlt;
-    markCard('card-alt','cv-alt', altOk, tAlt + ' ft');
-    roundScore += altOk ? 1 : 0;
+  if (memLevel === 'hard') {
+    const raw = document.getElementById('in-climb').value.trim().replace(',','.');
+    const clOk = Math.abs(parseFloat(raw) - tClimb) < 0.05;
+    memMarkCard('card-climb','cv-climb', clOk, (tClimb>0?'+':'') + tClimb.toFixed(1)); rScore += clOk?1:0;
   }
-
-  // Steigrate (Hard)
-  if (level === 'hard') {
-    const rawClimb = document.getElementById('in-climb').value.trim().replace(',','.');
-    const entClimb = parseFloat(rawClimb);
-    const climbOk  = Math.abs(entClimb - tClimb) < 0.05;
-    const climbSign = tClimb > 0 ? '+' : '';
-    markCard('card-climb','cv-climb', climbOk, climbSign + tClimb.toFixed(1));
-    roundScore += climbOk ? 1 : 0;
-  }
-
-  correctTotal += roundScore;
-  roundHistory.push({ round: currentRound, score: roundScore, max: paramsPerRound });
-
+  memCorrect += rScore;
+  memHistory.push({ round: memRound, score: rScore, max: memParams });
   document.getElementById('submit-btn').disabled = true;
-
-  setTimeout(() => {
-    if (currentRound < TOTAL_ROUNDS) startRound();
-    else showScoreScreen();
-  }, 2500);
+  setTimeout(() => { if (memRound < MEM_TOTAL) memStartRound(); else memShowScore(); }, 2500);
 }
 
-function markCard(cardId, cvId, correct, correctVal) {
-  const card = document.getElementById(cardId);
-  const cv   = document.getElementById(cvId);
+function memMarkCard(cardId, cvId, ok, val) {
+  const card = document.getElementById(cardId), cv = document.getElementById(cvId);
   if (!card || !cv) return;
-
-  card.classList.remove('correct','wrong');
-  card.classList.add(correct ? 'correct' : 'wrong');
-
-  cv.textContent = (correct ? '✓ ' : '✗ ') + correctVal;
-  cv.classList.toggle('wrong-shown', !correct);
-  cv.classList.add('visible');
+  card.classList.remove('correct','wrong'); card.classList.add(ok ? 'correct' : 'wrong');
+  cv.textContent = (ok ? '✓ ' : '✗ ') + val;
+  cv.classList.toggle('wrong-shown', !ok); cv.classList.add('visible');
 }
 
-// ══════════════════════════════════════════════
-// SCORE SCREEN
-// ══════════════════════════════════════════════
-function showScoreScreen() {
-  const total = TOTAL_ROUNDS * paramsPerRound;
-  const pct   = Math.round(correctTotal / total * 100);
-
-  setText('s-score',   `${correctTotal} / ${total}`);
+function memShowScore() {
+  const total = MEM_TOTAL * memParams;
+  const pct   = Math.round(memCorrect / total * 100);
+  setText('s-score', `${memCorrect} / ${total}`);
   setText('s-percent', `${pct}%`);
-
   const colors = { easy:'var(--easy)', medium:'var(--medium)', hard:'var(--hard)' };
   const names  = { easy:'EASY', medium:'MEDIUM', hard:'HARD' };
   const badge  = document.getElementById('s-badge');
-  badge.textContent    = names[level];
-  badge.style.color    = colors[level];
-  badge.style.borderColor = colors[level];
-
-  document.getElementById('s-percent').style.color =
-    pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
-
+  badge.textContent = names[memLevel]; badge.style.color = badge.style.borderColor = colors[memLevel];
+  document.getElementById('s-percent').style.color = pct>=80?'var(--green)':pct>=50?'var(--yellow)':'var(--red)';
   const hist = document.getElementById('s-history');
   hist.innerHTML = '<div class="history-title">RUNDENÜBERSICHT</div>';
-  roundHistory.forEach(r => {
-    const pctR = Math.round(r.score / r.max * 100);
-    const col  = pctR >= 80 ? 'var(--green)' : pctR >= 50 ? 'var(--yellow)' : 'var(--red)';
-    const row  = document.createElement('div');
-    row.className = 'history-row';
-    row.innerHTML = `
-      <span class="history-round">Runde ${r.round}</span>
-      <span class="history-score" style="color:${col}">${r.score} / ${r.max} (${pctR}%)</span>`;
+  memHistory.forEach(r => {
+    const p = Math.round(r.score/r.max*100);
+    const c = p>=80?'var(--green)':p>=50?'var(--yellow)':'var(--red)';
+    const row = document.createElement('div'); row.className = 'history-row';
+    row.innerHTML = `<span class="history-round">Runde ${r.round}</span><span class="history-score" style="color:${c}">${r.score} / ${r.max} (${p}%)</span>`;
     hist.appendChild(row);
   });
-
-  showScreen('score');
+  showScreen('screen-score');
 }
 
-function playAgain() {
-  currentRound = 0;
-  correctTotal = 0;
-  roundHistory = [];
-  startRound();
+function memoryPlayAgain() {
+  memRound = 0; memCorrect = 0; memHistory = [];
+  memStartRound();
 }
 
 // ══════════════════════════════════════════════
-// UTILS
+// ── CALC MODE ──
 // ══════════════════════════════════════════════
-function toggle(id, show) {
-  const el = document.getElementById(id);
-  if (el) el.classList.toggle('hidden', !show);
+const CALC_TIMES = [15, 30, 45, 60];
+const CALC_FRACS = ['¼', '½', '¾', '4/4'];
+
+let calcMode = 'easy';
+let calcScenario = null;
+let calcSubmitted = false;
+let calcScore = { c: 0, w: 0, t: 0 };
+let calcTimerInterval = null;
+let calcTimeLeft = 60;
+
+function startCalcMode(mode) {
+  calcMode = mode;
+  calcScore = { c: 0, w: 0, t: 0 };
+  updateCalcScoreUI();
+  const badge = document.getElementById('calc-mode-badge');
+  if (mode === 'easy') {
+    badge.textContent = 'LEICHT'; badge.style.color = badge.style.borderColor = 'var(--green)';
+  } else {
+    badge.textContent = 'SCHWER'; badge.style.color = badge.style.borderColor = 'var(--red)';
+  }
+  toggle('calc-timer-wrap', mode === 'hard');
+  showScreen('screen-calc');
+  calcNewTask();
 }
 
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
+function calcNewTask() {
+  calcSubmitted = false;
+  if (calcTimerInterval) { clearInterval(calcTimerInterval); calcTimerInterval = null; }
+
+  // Generate scenario
+  const dirs  = [360,-360,180,-180,270,-270,90,-90];
+  const alts  = [500,1000,1500,2000,-500,-1000,-1500,250,-250];
+  const dir   = dirs[Math.floor(Math.random() * dirs.length)];
+  const alt   = alts[Math.floor(Math.random() * alts.length)];
+  const startSpd = (Math.floor(Math.random() * 13) + 6) * 10; // 60-180 in 10er
+  const deltas   = [20,30,40,50,-20,-30,10,-10];
+  const spdDelta = deltas[Math.floor(Math.random() * deltas.length)];
+  const endSpd   = startSpd + spdDelta;
+  calcScenario   = { dir, alt, spdDelta, startSpd, endSpd };
+
+  // Update scenario display
+  const dirEl = document.getElementById('calc-dir-val');
+  dirEl.textContent = (dir>0?'+':'') + dir + '°';
+  dirEl.className = 'calc-param-val ' + (dir>0?'pos':'neg');
+  document.getElementById('calc-dir-hint').textContent = dir>0 ? '→ Rechts' : '← Links';
+
+  const altEl = document.getElementById('calc-alt-val');
+  altEl.textContent = (alt>0?'+':'') + alt + ' ft';
+  altEl.className = 'calc-param-val ' + (alt>0?'pos':'neg');
+
+  document.getElementById('calc-spd-start').textContent = startSpd + ' kn';
+  document.getElementById('calc-spd-end').textContent   = endSpd + ' kn';
+
+  // Build table
+  const tbody = document.getElementById('calc-tbody');
+  tbody.innerHTML = '';
+  CALC_TIMES.forEach((t, i) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <span class="calc-time-label">${t}s</span>
+        <span class="calc-frac">${CALC_FRACS[i]}</span>
+      </td>
+      <td><input type="number" class="calc-input" id="ci-deg-${i}" placeholder="?"></td>
+      <td><input type="number" class="calc-input" id="ci-ft-${i}"  placeholder="?"></td>
+      <td><input type="number" class="calc-input" id="ci-kn-${i}"  placeholder="?"></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  // Clear solutions
+  document.getElementById('calc-solutions').innerHTML = '';
+
+  // Re-enable check btn
+  const btn = document.getElementById('calc-check-btn');
+  btn.disabled = false; btn.style.opacity = '1';
+
+  // Enable all inputs
+  document.querySelectorAll('.calc-input').forEach(el => { el.disabled = false; el.className = 'calc-input'; });
+
+  // Enter key nav
+  const inputs = Array.from(document.querySelectorAll('.calc-input'));
+  inputs.forEach((el, idx) => {
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (idx + 1 < inputs.length) inputs[idx + 1].focus();
+        else calcCheckAnswers();
+      }
+    });
+  });
+
+  if (calcMode === 'hard') calcStartTimer();
+  else {
+    setText('calc-timer-num', '60');
+    const bar = document.getElementById('calc-timer-bar');
+    if (bar) { bar.style.width = '100%'; bar.className = 'calc-timer-bar'; }
+  }
+
+  // Focus first
+  const first = document.getElementById('ci-deg-0');
+  if (first) setTimeout(() => first.focus(), 200);
+}
+
+function calcStartTimer() {
+  calcTimeLeft = 60;
+  const numEl = document.getElementById('calc-timer-num');
+  const barEl = document.getElementById('calc-timer-bar');
+  calcTimerInterval = setInterval(() => {
+    calcTimeLeft--;
+    if (numEl) { numEl.textContent = calcTimeLeft; numEl.className = 'calc-timer-num' + (calcTimeLeft <= 10 ? ' urgent' : ''); }
+    if (barEl) { barEl.style.width = (calcTimeLeft / 60 * 100) + '%'; barEl.className = 'calc-timer-bar' + (calcTimeLeft <= 10 ? ' urgent' : ''); }
+    if (calcTimeLeft <= 0) { clearInterval(calcTimerInterval); if (!calcSubmitted) calcCheckAnswers(); }
+  }, 1000);
+}
+
+function calcCheckAnswers() {
+  if (calcSubmitted) return;
+  calcSubmitted = true;
+  if (calcTimerInterval) { clearInterval(calcTimerInterval); calcTimerInterval = null; }
+
+  const sc = calcScenario;
+  let correct = 0, wrong = 0;
+  const solContainer = document.getElementById('calc-solutions');
+  solContainer.innerHTML = '';
+
+  CALC_TIMES.forEach((t, i) => {
+    const frac    = t / 60;
+    const ansDeg  = Math.round(sc.dir * frac);
+    const ansFt   = Math.round(sc.alt * frac);
+    const ansKnAbs= Math.round(sc.startSpd + sc.spdDelta * frac);
+
+    const degInp = document.getElementById(`ci-deg-${i}`);
+    const ftInp  = document.getElementById(`ci-ft-${i}`);
+    const knInp  = document.getElementById(`ci-kn-${i}`);
+
+    const degVal = parseFloat(degInp?.value);
+    const ftVal  = parseFloat(ftInp?.value);
+    const knVal  = parseFloat(knInp?.value);
+
+    const tolDeg = Math.max(5, Math.abs(ansDeg) * 0.05);
+    const tolFt  = Math.max(25, Math.abs(ansFt) * 0.05);
+    const tolKn  = 5;
+
+    const degOk = !isNaN(degVal) && Math.abs(degVal - ansDeg) <= tolDeg;
+    const ftOk  = !isNaN(ftVal)  && Math.abs(ftVal  - ansFt)  <= tolFt;
+    const knOk  = !isNaN(knVal)  && Math.abs(knVal  - ansKnAbs) <= tolKn;
+
+    [degInp, ftInp, knInp].forEach((inp, j) => {
+      if (!inp) return;
+      const ok = [degOk, ftOk, knOk][j];
+      inp.className = 'calc-input ' + (ok ? 'correct' : 'wrong');
+      inp.disabled = true;
+    });
+
+    if (degOk && ftOk && knOk) correct++;
+    else wrong++;
+
+    if (!degOk || !ftOk || !knOk) {
+      const fracNum = (i + 1) / 4;
+      const fracStr = CALC_FRACS[i] + ` (${t}s)`;
+      let html = `<div class="calc-solution"><strong>✘ LÖSUNG – ${t} SEKUNDEN (${CALC_FRACS[i]} der Zeit)</strong>`;
+      if (!degOk) {
+        html += `Grad: <span style="color:var(--red)">${isNaN(degVal)?'–':degVal+'°'}</span> → Richtig: <span style="color:var(--green)">${ansDeg}°</span><br>`;
+        html += `<span class="calc-solution-step">${sc.dir}° × ${fracNum} = ${ansDeg}°</span><br>`;
+      }
+      if (!ftOk) {
+        html += `Höhe: <span style="color:var(--red)">${isNaN(ftVal)?'–':ftVal+' ft'}</span> → Richtig: <span style="color:var(--green)">${ansFt} ft</span><br>`;
+        html += `<span class="calc-solution-step">${sc.alt} ft × ${fracNum} = ${ansFt} ft</span><br>`;
+      }
+      if (!knOk) {
+        html += `Speed: <span style="color:var(--red)">${isNaN(knVal)?'–':knVal+' kn'}</span> → Richtig: <span style="color:var(--green)">${ansKnAbs} kn</span><br>`;
+        html += `<span class="calc-solution-step">${sc.startSpd} + (${sc.spdDelta} × ${fracNum}) = ${ansKnAbs} kn</span>`;
+      }
+      html += '</div>';
+      solContainer.insertAdjacentHTML('beforeend', html);
+    }
+  });
+
+  calcScore.c += correct; calcScore.w += wrong; calcScore.t += 4;
+  updateCalcScoreUI();
+
+  const btn = document.getElementById('calc-check-btn');
+  btn.disabled = true; btn.style.opacity = '0.4';
+}
+
+function updateCalcScoreUI() {
+  setText('calc-sc-c', calcScore.c);
+  setText('calc-sc-w', calcScore.w);
+  setText('calc-sc-t', calcScore.t);
+}
+
+function toggleCalcHelp() {
+  const body  = document.getElementById('calc-help-body');
+  const arrow = document.getElementById('calc-help-arrow');
+  const open  = body.classList.toggle('open');
+  arrow.textContent = open ? '▼' : '▶';
 }
 </script>
 </body>
